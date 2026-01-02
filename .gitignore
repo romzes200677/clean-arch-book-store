@@ -1,0 +1,62 @@
+## === [ .NET Сборка (рекурсивно для всех модулей) ] ===
+# Эти правила найдут bin и obj в любом подпроекте каталога modules/
+[Bb]in/
+[Oo]bj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## === [ Специфика Модульного Монолита ] ===
+# Игнорируем специфичные для модулей артефакты сборки
+modules/**/[Bb]in/
+modules/**/[Oo]bj/
+modules/**/TestResults/
+
+# Если модули генерируют свои логи в корень модуля
+modules/**/[Ll]ogs/
+*.log
+
+## === [ Конфигурации и Секреты ] ===
+# Игнорируем локальные настройки каждого модуля
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/usersecrets.json
+.env
+.env.*
+
+## === [ IDE & Редакторы ] ===
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+*.code-workspace
+*.sln.iml
+
+## === [ Пакеты и зависимости ] ===
+# NuGet пакеты
+*.nupkg
+.nuget/
+# Если в модулях есть фронтенд (например, UI-модуль)
+**/node_modules/
+**/dist/
+**/.next/
+
+## === [ Базы данных и кэш ] ===
+# Если модули используют локальные БД для тестов
+*.db
+*.sqlite
+*.sqlite3
+*-shm
+*-wal
+# Кэш EF Core (иногда генерируется при миграциях)
+*.tmp
+
+## === [ Системные файлы ] ===
+.DS_Store
+Thumbs.db
