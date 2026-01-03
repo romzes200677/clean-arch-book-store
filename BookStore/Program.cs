@@ -1,11 +1,28 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SharedKernel.Architecture;
 using User.Infrastructure;
 using User.Infrastructure.data;
 
 
 var builder = WebApplication.CreateBuilder(args);
+var assemblies = AppDomain.CurrentDomain.GetAssemblies(); // Или загружаем из папки Plugins
+
+// Ищем все типы, реализующие IModule
+var moduleTypes = assemblies
+    .SelectMany(a => a.GetTypes())
+    .Where(t => typeof(IModule).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+var modules = new List<IModule>();
+
+foreach (var type in moduleTypes)
+{
+    // Создаем экземпляр модуля через активатор
+    var module = (IModule)Activator.CreateInstance(type)!;
+    module.ConfigureServices(builder.Services, builder.Configuration);
+    modules.Add(module);
+}
 
 // 1. Контроллеры и Swagger
 builder.Services.AddControllers(); // Добавлено для поддержки [ApiController]
@@ -77,6 +94,12 @@ builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// --- CONFIGURE ENDPOINTS ---
+foreach (var module in modules)
+{
+    module.ConfigureEndpoints(app);
+}
 
 // --- Настройка Middleware (Порядок важен!) ---
 
