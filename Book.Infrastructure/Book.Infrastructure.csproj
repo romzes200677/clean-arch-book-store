@@ -7,11 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="MediatR" Version="14.0.0" />
+      <ProjectReference Include="..\Book.Application\Book.Application.csproj" />
+      <ProjectReference Include="..\Book.Domain\Book.Domain.csproj" />
     </ItemGroup>
 
 </Project>
