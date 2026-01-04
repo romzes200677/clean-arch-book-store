@@ -1,13 +1,13 @@
+using BookStore.User.Api;
+using BookStore.User.Infrastructure;
+using BookStore.User.Infrastructure.data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SharedKernel;
 using SharedKernel.Architecture;
-using System.Reflection;
-using User.Api;
-using User.Infrastructure;
-using User.Infrastructure.data;
+
 
 
 var builder = WebApplication.CreateBuilder(args);

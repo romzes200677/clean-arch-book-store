@@ -14,6 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BookStore.User.Api\BookStore.User.Api.csproj" />
+      <ProjectReference Include="..\BookStore.User.Infrastructure\BookStore.User.Infrastructure.csproj" />
       <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
       <ProjectReference Include="..\User.Api\User.Api.csproj" />
       <ProjectReference Include="..\User.Infrastructure\User.Infrastructure.csproj" />
