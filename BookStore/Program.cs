@@ -1,14 +1,13 @@
 using BookStore.User.Api;
 using BookStore.User.Infrastructure;
 using BookStore.User.Infrastructure.data;
+using BookStore.User.Infrastructure.seed;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SharedKernel;
 using SharedKernel.Architecture;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 // 1. Путь к модулям (например, корень или подпапка bin)
@@ -92,8 +91,19 @@ builder.Services.AddSwaggerGen(options =>
 // dotnet add package MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
 // 2. База данных
+
+// 2.1. Создаем и открываем соединение вручную, чтобы оно жило весь цикл работы приложения
+// TODO  Удалить при переходе на PG т.к нужно для sqlite inmemory
+////
+var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=:memory:");
+keepAliveConnection.Open();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("IdentityInMemoryDb"));
+{
+    // 3. Указываем EF Core использовать наше открытое соединение
+    options.UseSqlite(keepAliveConnection);
+});
+////
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -124,16 +134,17 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-var actionProvider = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>();
-foreach (var action in actionProvider.ActionDescriptors.Items)
-{
-    Console.WriteLine($"🔍 Found route: {action.AttributeRouteInfo?.Template} -> {action.DisplayName}");
-}
-
 // --- CONFIGURE ENDPOINTS ---
 foreach (var module in modules)
 {
     module.ConfigureEndpoints(app);
+}
+
+// Инициализация ролей
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await initializer.InitializeAsync();
 }
 
 // --- Настройка Middleware (Порядок важен!) ---

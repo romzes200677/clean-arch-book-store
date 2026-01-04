@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
 using BookStore.User.Application.Login;
+using BookStore.User.Application.Register;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 // Новый импорт
@@ -36,5 +38,14 @@ public class AuthController : ControllerBase
         // Достаем данные из токена (Claims)
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return Ok(new { UserId = userId });
+    }
+    
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterCommand request)
+    {
+        // Если используете MediatR:
+        await _mediator.Send(new RegisterCommand(request.Email, request.Password));
+         
+        return Ok("User registered successfully");
     }
 }

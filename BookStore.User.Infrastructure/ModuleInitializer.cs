@@ -1,4 +1,6 @@
 using BookStore.User.Application;
+using BookStore.User.Infrastructure.data;
+using BookStore.User.Infrastructure.seed;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +16,7 @@ public class UsersModule : IModule
         // 1. MediatR Registration
         // Важно: Сканируем ИМЕННО сборку Application, где лежат Use Cases и Handlers.
         // Assembly.GetExecutingAssembly() здесь даст Infrastructure, а нам нужно Application.
-        var applicationAssembly = typeof(User.Application.AssemblyMarker).Assembly; 
+        var applicationAssembly = typeof(AssemblyMarker).Assembly; 
     
         services.AddMediatR(cfg => 
             cfg.RegisterServicesFromAssemblies(applicationAssembly));
@@ -22,18 +24,19 @@ public class UsersModule : IModule
 
         // 2. DbContext
         // Если ты выбрал подход "Отдельный контекст на модуль"
-        services.AddDbContext<UsersDbContext>(options => 
+        services.AddDbContext<AppDbContext>(options => 
         {
             // Вместо UseSqlServer используем UseInMemoryDatabase.
             // "UsersDb" - это просто имя базы в оперативной памяти.
             // Если у тебя разные модули, можно давать им разные имена или одно общее.
-            options.UseInMemoryDatabase("UsersDb"); 
+            options.UseSqlite("DataSource=:memory:");
         });
 
 
         // 3. Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, AppUserService>();
+        services.AddScoped<IDbInitializer, DbInitializer>();
     }
 
     public void ConfigureEndpoints(IEndpointRouteBuilder app)
