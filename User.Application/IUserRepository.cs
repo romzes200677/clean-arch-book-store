@@ -1,6 +1,6 @@
 namespace User.Application;
 
-public class IUserRepository
+public interface IUserRepository
 {
-    
+    Task<Domain.User?> GetByIdAsync(Guid id);
 }

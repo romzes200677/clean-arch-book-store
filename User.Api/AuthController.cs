@@ -2,7 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using User.Api.commands;
+using User.Application.Login; // Новый импорт
 
 namespace User.Api;
 
@@ -20,9 +20,11 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        // Вызываем MediatR (или хендлер напрямую)
+        // Вызываем MediatR
         var result = await _mediator.Send(command);
-        return Ok(result);
+        
+        // result это AuthenticationResult { Token, UserId }
+        return Ok(new { Token = result.Token, UserId = result.UserId });
     }
     
     [Authorize] // Токен валиден?

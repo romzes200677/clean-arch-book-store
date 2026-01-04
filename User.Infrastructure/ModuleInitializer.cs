@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ public class UsersModule : IModule
 
         // 3. Repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserService, AppUserService>();
     }
 
     public void ConfigureEndpoints(IEndpointRouteBuilder app)
