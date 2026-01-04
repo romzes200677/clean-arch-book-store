@@ -1,13 +1,28 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SharedKernel;
 using SharedKernel.Architecture;
+using System.Reflection;
+using User.Api;
 using User.Infrastructure;
 using User.Infrastructure.data;
 
 
 var builder = WebApplication.CreateBuilder(args);
-var assemblies = AppDomain.CurrentDomain.GetAssemblies(); // Или загружаем из папки Plugins
+// 1. Путь к модулям (например, корень или подпапка bin)
+var modulesPath = AppContext.BaseDirectory;
+// Гарантированно загружаем сборку модуля User
+// 1. Загружаем сборки (используем ваш список assemblies из прошлого шага)
+var assemblies = ModuleLoader.LoadModuleAssemblies(AppContext.BaseDirectory);
+
+// Явное добавление сборки с контроллерами (User.Api)
+var userApiAssembly = typeof(AuthController).Assembly;
+if (!assemblies.Contains(userApiAssembly))
+{
+    assemblies.Add(userApiAssembly);
+}
 
 // Ищем все типы, реализующие IModule
 var moduleTypes = assemblies
@@ -24,8 +39,23 @@ foreach (var type in moduleTypes)
     modules.Add(module);
 }
 
+// 4. ВАЖНО для контроллеров:
+// 2. Регистрируем MVC и явно указываем части приложения
+var mvcBuilder = builder.Services.AddControllers()
+    .ConfigureApplicationPartManager(apm =>
+    {
+        foreach (var assembly in assemblies)
+        {
+            // Это принудительная активация контроллеров в сборке
+            if (!apm.ApplicationParts.Any(p => p.Name == assembly.GetName().Name))
+            {
+                apm.ApplicationParts.Add(new Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart(assembly));
+            }
+        }
+    });
+
 // 1. Контроллеры и Swagger
-builder.Services.AddControllers(); // Добавлено для поддержки [ApiController]
+// УДАЛЕН builder.Services.AddControllers(); // Это дублирующий вызов
 builder.Services.AddEndpointsApiExplorer(); // Нужно для корректной работы Swagger
 builder.Services.AddSwaggerGen(options =>
 {
@@ -59,9 +89,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddOpenApi();
 // dotnet add package MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
 // 2. База данных
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("IdentityInMemoryDb"));
@@ -95,6 +124,12 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+var actionProvider = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>();
+foreach (var action in actionProvider.ActionDescriptors.Items)
+{
+    Console.WriteLine($"🔍 Found route: {action.AttributeRouteInfo?.Template} -> {action.DisplayName}");
+}
+
 // --- CONFIGURE ENDPOINTS ---
 foreach (var module in modules)
 {
@@ -108,8 +143,6 @@ if (app.Environment.IsDevelopment())
     // Swagger UI
     app.UseSwagger();
     app.UseSwaggerUI();
-    
-    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
