@@ -47,7 +47,7 @@ public class AppUserService : IUserService
         var claims = BuildClaims(appUser, userRoles);
         
         // 2. Генерация JWT
-        var token = GenerateJwtToken(claims, appUser.Id);
+        var token = GenerateJwtToken(claims);
         // 2. Генерируем Refresh Token
         var refreshToken = new RefreshToken
         {
@@ -108,9 +108,9 @@ public class AppUserService : IUserService
         }
     }
 
-    private string GenerateJwtToken(List<Claim> claims, Guid userId)
+    private string GenerateJwtToken(List<Claim> claims)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured")));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Key is not configured")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -156,7 +156,7 @@ public class AppUserService : IUserService
             await _dbContext.SaveChangesAsync();
 
             var roles = await _userManager.GetRolesAsync(appUser);
-            var accessToken = GenerateJwtToken(BuildClaims(appUser, roles), appUser.Id);
+            var accessToken = GenerateJwtToken(BuildClaims(appUser, roles));
 
             await transaction.CommitAsync();
             return new AuthenticationResult(accessToken, newRefreshToken.Token, appUser.Id);

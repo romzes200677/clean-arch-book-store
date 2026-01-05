@@ -1,17 +1,16 @@
+using System.Text;
 using BookStore.User.Api;
 using BookStore.User.Infrastructure;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.seed;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SharedKernel;
 using SharedKernel.Architecture;
 
 var builder = WebApplication.CreateBuilder(args);
-// 1. Путь к модулям (например, корень или подпапка bin)
-var modulesPath = AppContext.BaseDirectory;
 // Гарантированно загружаем сборку модуля User
 // 1. Загружаем сборки (используем ваш список assemblies из прошлого шага)
 var assemblies = ModuleLoader.LoadModuleAssemblies(AppContext.BaseDirectory);
@@ -38,9 +37,9 @@ foreach (var type in moduleTypes)
     modules.Add(module);
 }
 
-// 4. ВАЖНО для контроллеров:
+
 // 2. Регистрируем MVC и явно указываем части приложения
-var mvcBuilder = builder.Services.AddControllers()
+builder.Services.AddControllers()
     .ConfigureApplicationPartManager(apm =>
     {
         foreach (var assembly in assemblies)
@@ -54,7 +53,6 @@ var mvcBuilder = builder.Services.AddControllers()
     });
 
 // 1. Контроллеры и Swagger
-// УДАЛЕН builder.Services.AddControllers(); // Это дублирующий вызов
 builder.Services.AddEndpointsApiExplorer(); // Нужно для корректной работы Swagger
 builder.Services.AddSwaggerGen(options =>
 {
@@ -115,9 +113,39 @@ builder.Services.AddIdentityCore<AppUser>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
 
+// Чтение через индексатор (строка)
+var secretKey = builder.Configuration["JwtSettings:SecretKey"]; //читаем из secrets
+var issuer = builder.Configuration["Jwt:Issuer"];
+var audience = builder.Configuration["Jwt:Audience"];
+
+
+// Проверка на null
+if (string.IsNullOrEmpty(secretKey)) 
+    throw new Exception("JWT Secret Key is missing in configuration!");
+
+var key = Encoding.UTF8.GetBytes(secretKey);
 // 4. Аутентификация
-builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
-    .AddBearerToken(IdentityConstants.BearerScheme);
+builder.Services.AddAuthentication(options =>
+    {
+        // Указываем, что по умолчанию используем JWT Bearer
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+        
+            // Должно СОВПАДАТЬ с тем, что вы пишете в методе GenerateJwtToken
+            ValidIssuer = issuer, 
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
 
 builder.Services.AddAuthorization();
 
