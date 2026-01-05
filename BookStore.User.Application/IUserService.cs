@@ -6,4 +6,5 @@ public interface IUserService
 {
     Task<AuthenticationResult?> AuthenticateAsync(string email, string password);
     Task RegisterAsync(string email, string password);
+    Task<AuthenticationResult?> RefreshTokenAsync(string tokenValue);
 }

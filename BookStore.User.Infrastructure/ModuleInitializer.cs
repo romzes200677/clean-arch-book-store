@@ -1,6 +1,7 @@
 using BookStore.User.Application;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.seed;
+using BookStore.User.Infrastructure.services;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,13 +36,13 @@ public class UsersModule : IModule
             options.UseSqlite(keepAliveConnection);
         });
         ////
-      
-
-
+        
         // 3. Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, AppUserService>();
         services.AddScoped<IDbInitializer, DbInitializer>();
+        //Background
+        services.AddHostedService<RefreshTokenCleanupService>();
     }
 
     public void ConfigureEndpoints(IEndpointRouteBuilder app)

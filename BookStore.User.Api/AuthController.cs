@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using BookStore.User.Application.Login;
+using BookStore.User.Application.Refresh;
 using BookStore.User.Application.Register;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +29,7 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command);
         
         // result это AuthenticationResult { Token, UserId }
-        return Ok(new { Token = result.Token, UserId = result.UserId });
+        return Ok(result);
     }
     
     [Authorize] // Токен валиден?
@@ -48,4 +49,16 @@ public class AuthController : ControllerBase
          
         return Ok("User registered successfully");
     }
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshCommand request)
+    {
+        var result =await _mediator.Send(request);
+    
+        if (result == null)
+            return Unauthorized("Невалидный токен обновления");
+
+        return Ok(result);
+    }
+    
 }

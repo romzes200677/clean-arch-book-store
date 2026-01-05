@@ -15,7 +15,12 @@ public class UserRepository:IUserRepository
 
     public async Task<Domain.User?> GetByIdAsync(Guid id)
     {
-        var userentity = await _dbContext.Users.FirstOrDefaultAsync(x=> x.Id == id);
-        return userentity;
+        var userEntity = await _dbContext.Users.FirstOrDefaultAsync(x=> x.Id == id);
+        return userEntity;
+    }
+
+    public async Task SaveRefreshToken(Guid userId, string token)
+    {
+        await _dbContext.Users.FirstOrDefaultAsync(x=> x.Id == userId);
     }
 }
