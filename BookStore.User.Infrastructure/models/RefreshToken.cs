@@ -10,7 +10,7 @@ public class RefreshToken
     
     // Связь с вашим бизнес-пользователем
     public Guid UserId { get; set; }
-    public Domain.User User { get; set; } = null!;
+    public AppUser User { get; set; } = null!;
 
     public bool IsExpired => DateTime.UtcNow >= ExpiryDate;
     public bool IsActive => !IsRevoked && !IsExpired;
