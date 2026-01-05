@@ -90,19 +90,8 @@ builder.Services.AddSwaggerGen(options =>
 
 // dotnet add package MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
-// 2. База данных
 
-// 2.1. Создаем и открываем соединение вручную, чтобы оно жило весь цикл работы приложения
-// TODO  Удалить при переходе на PG т.к нужно для sqlite inmemory
-////
-var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=:memory:");
-keepAliveConnection.Open();
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    // 3. Указываем EF Core использовать наше открытое соединение
-    options.UseSqlite(keepAliveConnection);
-});
-////
+
 
 builder.Services.AddCors(options =>
 {

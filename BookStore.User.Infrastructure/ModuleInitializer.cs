@@ -22,15 +22,20 @@ public class UsersModule : IModule
             cfg.RegisterServicesFromAssemblies(applicationAssembly));
 
 
-        // 2. DbContext
-        // Если ты выбрал подход "Отдельный контекст на модуль"
-        services.AddDbContext<AppDbContext>(options => 
+        // 2. База данных
+
+        // 2.1. Создаем и открываем соединение вручную, чтобы оно жило весь цикл работы приложения
+        // TODO  Удалить при переходе на PG т.к нужно для sqlite inmemory
+        ////
+        var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=:memory:");
+        keepAliveConnection.Open();
+        services.AddDbContext<AppDbContext>(options =>
         {
-            // Вместо UseSqlServer используем UseInMemoryDatabase.
-            // "UsersDb" - это просто имя базы в оперативной памяти.
-            // Если у тебя разные модули, можно давать им разные имена или одно общее.
-            options.UseSqlite("DataSource=:memory:");
+            // 3. Указываем EF Core использовать наше открытое соединение
+            options.UseSqlite(keepAliveConnection);
         });
+        ////
+      
 
 
         // 3. Repositories
