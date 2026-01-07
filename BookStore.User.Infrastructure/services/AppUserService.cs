@@ -2,18 +2,20 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BookStore.User.Application;
+using BookStore.User.Application.ConfirmEmail;
 using BookStore.User.Application.Login;
 using BookStore.User.Domain;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 // Предполагая, что AppDbContext где-то здесь
 
-namespace BookStore.User.Infrastructure;
+namespace BookStore.User.Infrastructure.services;
 
 // Этот класс зависит от Identity (AppUser) и IConfiguration
 public class AppUserService : IUserService
@@ -21,15 +23,18 @@ public class AppUserService : IUserService
     private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _config;
     private readonly AppDbContext _dbContext; // Понадобится для получения данных доменного пользователя по ID
+    private readonly INofificationService  _nofificationService;
+    
 
     public AppUserService(
         UserManager<AppUser> userManager, 
         IConfiguration config, 
-        AppDbContext dbContext)
+        AppDbContext dbContext, INofificationService nofificationService)
     {
         _userManager = userManager;
         _config = config;
         _dbContext = dbContext;
+        _nofificationService = nofificationService;
     }
 
     public async Task<AuthenticationResult?> AuthenticateAsync(string email, string password)
@@ -66,7 +71,6 @@ public class AppUserService : IUserService
     {
         // Начинаем транзакцию через ваш основной DbContext
         using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
         try
         {
             // 1. Создаем Identity аккаунт
@@ -99,6 +103,12 @@ public class AppUserService : IUserService
 
             // 5. ПОДТВЕРЖДАЕМ транзакцию (только здесь данные реально зафиксируются в БД)
             await transaction.CommitAsync();
+            
+            //Отправляем токен подтверждения
+            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            // Токен нужно закодировать для передачи в URL (Base64UrlEncode)
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
+            await _nofificationService.NotifyAsync(user.Id, encodedToken);
         }
         catch (Exception)
         {
@@ -167,6 +177,25 @@ public class AppUserService : IUserService
             return null;
         }
     }
+
+    public async Task<ConfirmEmailResult> ConfirmEmailAsync(Guid userId, string tokenValue)
+    {
+        var user =  await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            throw new Exception("User not found");
+        // 1. Принимаем закодированный токен из URL
+        // 2. Декодируем его обратно в нормальный вид
+        byte[] decodedTokenBytes = WebEncoders.Base64UrlDecode(tokenValue);
+        string originalToken = Encoding.UTF8.GetString(decodedTokenBytes);
+        var resultConfirm = await _userManager.ConfirmEmailAsync(user, originalToken);
+        if (!resultConfirm.Succeeded)
+        {
+            var error = string.Join(", ", resultConfirm.Errors.Select(e => e.Description));
+            return new ConfirmEmailResult(false,error);
+        }
+        return new ConfirmEmailResult(true,"");
+    }
+
     private List<Claim> BuildClaims(AppUser user, IList<string> roles)
     {
         var claims = new List<Claim>

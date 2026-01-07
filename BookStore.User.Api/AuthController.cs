@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using BookStore.User.Application.ConfirmEmail;
 using BookStore.User.Application.Login;
 using BookStore.User.Application.Refresh;
 using BookStore.User.Application.Register;
@@ -60,5 +61,15 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-    
+
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(Guid userId,string token)
+    {
+        var result = await _mediator.Send(new ConfirmEmailCommand(userId,token));
+        if (result.Success)
+        {
+            return Ok("email confirmed successfully");
+        }
+        return BadRequest($"email could not be confirmed with errors: {result.Errors} ");
+    }
 }

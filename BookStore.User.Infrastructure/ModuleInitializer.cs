@@ -37,6 +37,7 @@ public class UsersModule : IModule
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, AppUserService>();
         services.AddScoped<IDbInitializer, DbInitializer>();
+        services.AddScoped<INofificationService, NofificationService>();
         //Background
         services.AddHostedService<RefreshTokenCleanupService>();
     }

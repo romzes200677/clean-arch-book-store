@@ -108,6 +108,7 @@ builder.Services.AddIdentityCore<AppUser>(options =>
         options.Password.RequiredLength = 8;
         options.Password.RequireNonAlphanumeric = false;
         options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = true;
     })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
