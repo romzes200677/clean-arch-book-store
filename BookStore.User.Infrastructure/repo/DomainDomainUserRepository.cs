@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.User.Infrastructure.repo;
 
-public class UserRepository:IUserRepository
+public class DomainDomainUserRepository:IDomainUserRepository
 {
     private readonly AppDbContext _dbContext;
 
-    public UserRepository(AppDbContext dbContext)
+    public DomainDomainUserRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }

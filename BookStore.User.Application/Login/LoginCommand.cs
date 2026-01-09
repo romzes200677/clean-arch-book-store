@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using BookStore.User.Application.Interfaces;
 using MediatR;
 
 namespace BookStore.User.Application.Login;

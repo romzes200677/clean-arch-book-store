@@ -9,15 +9,15 @@ namespace BookStore.User.Application.Register;
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
 {
     private readonly IIdentityService _identityService;
-    private readonly IUserRepository _userRepository;
+    private readonly IDomainUserRepository _domainUserRepository;
     private readonly INofificationService _nofificationService;
     private readonly IUnitOfWork _unitOfWork;
     
 
-    public RegisterCommandHandler(IIdentityService identityService, IUserRepository userRepository, INofificationService nofificationService, IUnitOfWork unitOfWork)
+    public RegisterCommandHandler(IIdentityService identityService, IDomainUserRepository domainUserRepository, INofificationService nofificationService, IUnitOfWork unitOfWork)
     {
         _identityService = identityService;
-        _userRepository = userRepository;
+        _domainUserRepository = domainUserRepository;
         _nofificationService = nofificationService;
         _unitOfWork = unitOfWork;
     }
@@ -35,7 +35,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
                 Role = Role.user,
                 Name = request.Email.Split('@')[0] // Пример заполнения имени
             };
-            await _userRepository.SaveUser(businessUser);
+            await _domainUserRepository.SaveUser(businessUser);
             var tokenForEmail = await _identityService.GenerateTokenForEmail(businessUser.Id);
             await _nofificationService.NotifyAsync(userId, tokenForEmail);
             await _unitOfWork.CommitAsync(cancellationToken);

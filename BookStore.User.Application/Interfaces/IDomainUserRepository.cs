@@ -1,6 +1,6 @@
 namespace BookStore.User.Application.Interfaces;
 
-public interface IUserRepository
+public interface IDomainUserRepository
 {
     Task<Domain.User?> GetByIdAsync(Guid id);
     Task SaveUser(Domain.User user);

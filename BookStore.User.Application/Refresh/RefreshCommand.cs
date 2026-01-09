@@ -1,4 +1,4 @@
-using BookStore.User.Application.Login;
+using BookStore.User.Application.Interfaces;
 using MediatR;
 
 namespace BookStore.User.Application.Refresh;

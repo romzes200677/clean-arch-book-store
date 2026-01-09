@@ -10,13 +10,15 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
 {
     private readonly IIdentityService _identityService;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
+    private readonly ISecurityService _securityService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public RefdreshCommandHandler(IIdentityService identityService,  IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository)
+    public RefdreshCommandHandler(IIdentityService identityService,  IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository, ISecurityService securityService)
     {
         _identityService = identityService;
         _unitOfWork = unitOfWork;
         _refreshTokenRepository = refreshTokenRepository;
+        _securityService = securityService;
     }
 
     public async  Task<AuthenticationResult?> Handle(RefreshCommand request, CancellationToken cancellationToken)
@@ -29,19 +31,28 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
         
         var userId = await _refreshTokenRepository.GetUserByTokenAsync(request.RefreshToken);
         
-        var isExistUser = await _identityService.CheckAppUserAsync(userId);
+        var isExistUser = await _identityService.CheckUser(userId);
         if (isExistUser)
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
             try
             {
                 var isRevoked = await _refreshTokenRepository.SetInvalidToken(request.RefreshToken);
-                var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
-                var newAccessToken = await _identityService.GenerateAccessToken(userId);
-                if (newAccessToken != string.Empty && newRefreshToken != string.Empty)
+                if (isRevoked)
                 {
-                    await _unitOfWork.CommitAsync(cancellationToken);
-                    return new AuthenticationResult(newAccessToken, newRefreshToken, userId);
+                    var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
+                    var email = await _identityService.GetEmailUser(userId);
+                    if (email != null)
+                    {
+                        var roles = await _identityService.GetRoles(userId);
+                        var claims = _securityService.BuildClaims(userId, email, roles);
+                        var accessToken =_securityService.GenerateJwtToken(claims);
+                        if (accessToken != string.Empty && newRefreshToken != string.Empty)
+                        {
+                            await _unitOfWork.CommitAsync(cancellationToken);
+                            return new AuthenticationResult(accessToken, newRefreshToken, userId);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

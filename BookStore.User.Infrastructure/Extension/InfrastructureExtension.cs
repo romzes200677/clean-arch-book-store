@@ -19,7 +19,7 @@ public static class InfrastructureExtensions // Имя класса обычно
         });
 
         // Repositories & Services
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IDomainUserRepository, DomainDomainUserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDbInitializer, DbInitializer>();
         services.AddScoped<INofificationService, NofificationService>();

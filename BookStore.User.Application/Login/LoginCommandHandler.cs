@@ -8,37 +8,46 @@ namespace BookStore.User.Application.Login;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthenticationResult>
 {
     private readonly IIdentityService _identityService;
-    private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRefreshTokenRepository  _refreshTokenRepository;
+    private readonly ISecurityService _securityService;
 
-    public LoginCommandHandler(IIdentityService identityService, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public LoginCommandHandler(IIdentityService identityService, IDomainUserRepository domainUserRepository, IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository, ISecurityService securityService)
     {
         _identityService = identityService;
-        _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _refreshTokenRepository = refreshTokenRepository;
+        _securityService = securityService;
     }
 
     public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
-        
-        // 1. Аутентификация через инфраструктурный слой
-        var authResult = await _identityService.AuthenticateAsync(request.Email, request.Password);
-        
-        if (authResult == null)
+        var userId = await _identityService.CheckAuthData(request.Email,request.Password);
+       
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            throw new UnauthorizedAccessException("Authentication failed.");
+                var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
+                var email = await _identityService.GetEmailUser(userId);
+                if (email != null)
+                {
+                    var roles = await _identityService.GetRoles(userId);
+                    var claims = _securityService.BuildClaims(userId, email, roles);
+                    var accessToken =_securityService.GenerateJwtToken(claims);
+                    if (accessToken != string.Empty && newRefreshToken != string.Empty)
+                    {
+                        await _unitOfWork.CommitAsync(cancellationToken);
+                        return new AuthenticationResult(accessToken, newRefreshToken, userId);
+                    }
+                }
+            
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            throw;
         }
         
-        // 2. Получаем доменного пользователя для claims (если роли или другие данные не были в AppUser)
-        // В данном случае, в IAuthenticationService мы уже добавили роли из AppUser. 
-        // Если бы нам нужны были данные из User.Domain.User, мы бы использовали:
-        // var domainUser = await _userRepository.GetByIdAsync(authResult.UserId);
-        var user = await _userRepository.GetByIdAsync(authResult.UserId);
-        if (user == null) throw new UnauthorizedAccessException("User not found.");
-        
-        await _unitOfWork.CommitAsync(cancellationToken);
-        // Возвращаем результат, который включает токен и UserId
-        return authResult;
+        throw new Exception("can't refresh token");
     }
 }
