@@ -7,6 +7,7 @@ using BookStore.User.Application.Login;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 // Предполагая, что AppDbContext где-то здесь
@@ -19,17 +20,16 @@ public class IdentityService : IIdentityService
     private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _config;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
-    
-    
+    private readonly ILogger<IdentityService> _logger;
 
-    public IdentityService(
-        UserManager<AppUser> userManager, 
-        IConfiguration config, IRefreshTokenRepository refreshTokenRepository)
+    public IdentityService(UserManager<AppUser> userManager, IConfiguration config, IRefreshTokenRepository refreshTokenRepository, ILogger<IdentityService> logger)
     {
         _userManager = userManager;
         _config = config;
         _refreshTokenRepository = refreshTokenRepository;
+        _logger = logger;
     }
+
 
     public async Task<AuthenticationResult?> AuthenticateAsync(string email, string password)
     {
@@ -84,13 +84,14 @@ public class IdentityService : IIdentityService
         if (!resultConfirm.Succeeded)
         {
             var error = string.Join(", ", resultConfirm.Errors.Select(e => e.Description));
-            return new ConfirmEmailResult(false,error);
+            _logger.LogInformation(error);
+            return new ConfirmEmailResult(false);
         }
-        return new ConfirmEmailResult(true,"");
+        return new ConfirmEmailResult(true);
     }
     
 
-    public async Task<bool> ExistUserAsync(Guid userId)
+    public async Task<bool> CheckAppUserAsync(Guid userId)
     {
         var user =  await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -131,7 +132,7 @@ public class IdentityService : IIdentityService
     {
         var appUser = await _userManager.FindByIdAsync(userId.ToString());
         if (appUser == null) 
-            return null;
+            return String.Empty;
         var roles = await _userManager.GetRolesAsync(appUser);
         var accessToken = GenerateJwtToken(BuildClaims(appUser, roles));
         return accessToken;

@@ -36,3 +36,65 @@
 3. Добавь валидацию команд через FluentValidation.
 
 Хочешь разобрать какой-то из этих пунктов подробнее?
+
+Отличные вопросы! Именно понимание этих нюансов отделяет Junior от Middle. Давай разбираться по порядку.
+
+### 1. Про SRP и "Божественный сервис"
+**SRP (Single Responsibility Principle)** — это не про то, что класс должен делать "одну функцию", а про то, что у него должна быть **одна причина для изменения**.
+
+В твоем `AppUserService` сейчас намешано:
+1.  **Работа с Identity** (создание юзера, проверка пароля).
+2.  **Бизнес-логика** (создание `Domain.User`, транзакции).
+3.  **Безопасность/JWT** (генерация токенов, создание Claims).
+4.  **Уведомления** (вызов NotificationService).
+
+**Почему это плохо?** Если ты решишь сменить JWT на Cookies — ты правишь этот класс. Решишь сменить Identity на кастомную БД — правишь этот же класс. Решишь изменить логику регистрации (например, добавить начисление бонусов) — снова он. Это и есть нарушение SRP.
+
+### 2. IdentityService vs UserService
+Ты абсолютно прав: нам нужен **Фасад (или адаптер)** над Identity в слое `Infrastructure`.
+
+*   **`IIdentityService` (Infrastructure)**: Его задача — просто "обернуть" `UserManager` и `SignInManager`. Он работает с `AppUser`. Методы: `CreateUserAsync`, `CheckPasswordAsync`, `GenerateEmailTokenAsync`. Он возвращает результат операции (успех/ошибка).
+*   **`RegisterCommandHandler` (Application)**: Вот здесь должна быть "дирижирование".
+    ```csharp
+    // Псевдокод хэндлера
+    public async Task Handle(...) {
+       using var scope = transactionManager.Begin();
+       
+       // 1. Создаем Identity (через фасад)
+       var identityResult = await _identityService.CreateAsync(email, pass);
+       
+       // 2. Создаем нашего Domain User (через репозиторий)
+       var user = new User(identityResult.Id, ...);
+       await _userRepository.AddAsync(user);
+       
+       await scope.CommitAsync();
+       
+       // 3. Отправляем уведомление
+       var token = await _identityService.GenerateTokenAsync(user.Id);
+       await _notificationService.SendConfirmEmailAsync(user.Email, token);
+    }
+    ```
+
+### 3. Куда деть `BuildClaims` и JWT?
+`BuildClaims` — это чисто техническая деталь аутентификации.
+
+*   **Где логика JWT?** Создай отдельный сервис в `Infrastructure`: `TokenService : ITokenService`. 
+*   **Где `BuildClaims`?** 
+    *   Если Claims зависят только от данных аккаунта (email, id) — внутри `TokenService` или `IdentityService`.
+    *   **Middle-подход:** Claims часто содержат бизнес-данные (права доступа, подписки). Поэтому часто делают `IUserClaimsPrincipalFactory` (стандарт в Identity) или небольшой сервис в Application слое, который собирает данные для токена.
+
+**Итог по именованию:**
+*   [`IIdentityService`](BookStore.User.Application/IUserService.cs) — это технический фасад над ASP.NET Identity.
+*   `IUserService` — это обычно бизнес-сервис (если не используешь MediatR). Но раз у тебя MediatR, `IUserService` тебе вообще **не нужен**. Его логика должна размазаться по `Commands` и техническим фасадам.
+
+### 4. Ответ на "Я хотел всё в хэндлере"
+Ты правильно сделал, что не потащил `UserManager` в хэндлер. Слой `Application` не должен зависеть от библиотек инфраструктуры (Entity Framework, Microsoft.AspNetCore.Identity). 
+Твоя "обертка" — это правильное направление, просто ты свалил в неё слишком много ответственности.
+
+**Твой путь к Middle:**
+1.  **Разделяй техническое и бизнес:** `IdentityService` — техническое (создать запись в БД Identity). `RegisterCommand` — бизнес (зарегистрировать клиента в системе).
+2.  **Используй Domain-события:** Вместо того чтобы вызывать `NotificationService` прямо в коде регистрации, Middle-разработчик часто генерирует событие `UserRegisteredEvent`, которое потом ловится отдельным хэндлером и отправляет письмо. Это делает код максимально независимым.
+
+**Как назвать правильно?**
+Переименуй свой текущий `IUserService` в `IIdentityService`. Убери из него создание `Domain.User` и отправку уведомлений. Перенеси эту логику в `RegisterCommandHandler`. Это будет чистый, поддерживаемый код.
+

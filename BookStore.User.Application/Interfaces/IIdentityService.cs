@@ -9,7 +9,7 @@ public interface IIdentityService
     Task<Guid> RegisterAsync(string email, string password);
 
     Task<ConfirmEmailResult> ConfirmEmailAsync(Guid userId, string tokenValue);
-    Task<bool> ExistUserAsync(Guid userId);
+    Task<bool> CheckAppUserAsync(Guid userId);
     public Task<string> GenerateAccessToken(Guid userId);
     public Task<string> GenerateTokenForEmail(Guid userId);
 }

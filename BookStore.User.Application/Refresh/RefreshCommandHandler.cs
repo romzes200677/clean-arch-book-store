@@ -29,7 +29,7 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
         
         var userId = await _refreshTokenRepository.GetUserByTokenAsync(request.RefreshToken);
         
-        var isExistUser = await _identityService.ExistUserAsync(userId);
+        var isExistUser = await _identityService.CheckAppUserAsync(userId);
         if (isExistUser)
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -38,8 +38,11 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
                 var isRevoked = await _refreshTokenRepository.SetInvalidToken(request.RefreshToken);
                 var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
                 var newAccessToken = await _identityService.GenerateAccessToken(userId);
-                await _unitOfWork.CommitAsync(cancellationToken);
-                return new AuthenticationResult(newAccessToken, newRefreshToken, userId);
+                if (newAccessToken != string.Empty && newRefreshToken != string.Empty)
+                {
+                    await _unitOfWork.CommitAsync(cancellationToken);
+                    return new AuthenticationResult(newAccessToken, newRefreshToken, userId);
+                }
             }
             catch (Exception ex)
             {

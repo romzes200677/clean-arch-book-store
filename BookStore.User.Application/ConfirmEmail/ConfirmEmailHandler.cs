@@ -1,19 +1,20 @@
+using BookStore.User.Application.Interfaces;
 using MediatR;
 
 namespace BookStore.User.Application.ConfirmEmail;
 
 public class ConfirmEmailHandler: IRequestHandler<ConfirmEmailCommand,ConfirmEmailResult>
 {
-    private readonly IUserService  _userService;
+    private readonly IIdentityService  _identityService;
 
-    public ConfirmEmailHandler(IUserService userService)
+    public ConfirmEmailHandler(IIdentityService identityService)
     {
-        _userService = userService;
+        _identityService = identityService;
     }
 
     public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
-        var result = await _userService.ConfirmEmailAsync(request.UserId, request.Token);
+        var result = await _identityService.ConfirmEmailAsync(request.UserId, request.Token);
         return result;
     }
 }

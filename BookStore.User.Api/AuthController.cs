@@ -5,10 +5,7 @@ using BookStore.User.Application.Refresh;
 using BookStore.User.Application.Register;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-
-// Новый импорт
 
 namespace BookStore.User.Api;
 
@@ -70,6 +67,6 @@ public class AuthController : ControllerBase
         {
             return Ok("email confirmed successfully");
         }
-        return BadRequest($"email could not be confirmed with errors: {result.Errors} ");
+        return BadRequest($"email could not be confirmed ");
     }
 }
