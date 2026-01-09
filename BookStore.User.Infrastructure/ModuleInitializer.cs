@@ -1,9 +1,7 @@
 using BookStore.User.Application;
-using BookStore.User.Infrastructure.data;
-using BookStore.User.Infrastructure.seed;
+using BookStore.User.Infrastructure.Extension;
 using BookStore.User.Infrastructure.services;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Architecture;
@@ -21,23 +19,9 @@ public class UsersModule : IModule
     
         services.AddMediatR(cfg => 
             cfg.RegisterServicesFromAssemblies(applicationAssembly));
-
-
-        // 2. База данных
-
         
-        services.AddDbContext<AppDbContext>(options =>
-        {
-            // 3. Указываем EF Core использовать наше открытое соединение
-            options.UseSqlite(configuration["ConnectionStrings:DefaultConnection"]);
-        });
-        ////
+        services.AddInfrastructure(configuration);
         
-        // 3. Repositories
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserService, AppUserService>();
-        services.AddScoped<IDbInitializer, DbInitializer>();
-        services.AddScoped<INofificationService, NofificationService>();
         //Background
         services.AddHostedService<RefreshTokenCleanupService>();
     }

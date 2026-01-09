@@ -1,14 +1,17 @@
+using BookStore.User.Application.Interfaces;
 using BookStore.User.Infrastructure.models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BookStore.User.Infrastructure.data;
 
-public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
+public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>,IUnitOfWork
 {
     public DbSet<Domain.User> Users { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    private IDbContextTransaction? _currentTransaction;
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
@@ -48,5 +51,34 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+    }
+
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        _currentTransaction ??= await Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public async Task CommitAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await SaveChangesAsync(cancellationToken);
+            if (_currentTransaction != null) await _currentTransaction.CommitAsync(cancellationToken);
+        }
+        finally
+        {
+            _currentTransaction?.Dispose();
+            _currentTransaction = null;
+        }
+    }
+
+    public async Task RollbackAsync(CancellationToken cancellationToken = default)
+    {
+        if (_currentTransaction != null)
+        {
+            await _currentTransaction.RollbackAsync(cancellationToken);
+            _currentTransaction.Dispose();
+            _currentTransaction = null;
+        }
     }
 }

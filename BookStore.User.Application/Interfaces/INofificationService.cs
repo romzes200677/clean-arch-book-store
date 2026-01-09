@@ -1,4 +1,4 @@
-namespace BookStore.User.Application;
+namespace BookStore.User.Application.Interfaces;
 
 public interface INofificationService
 {

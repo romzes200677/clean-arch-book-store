@@ -1,8 +1,8 @@
-using BookStore.User.Application;
+using BookStore.User.Application.Interfaces;
 using BookStore.User.Infrastructure.data;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookStore.User.Infrastructure;
+namespace BookStore.User.Infrastructure.repo;
 
 public class UserRepository:IUserRepository
 {
@@ -22,5 +22,11 @@ public class UserRepository:IUserRepository
     public async Task SaveRefreshToken(Guid userId, string token)
     {
         await _dbContext.Users.FirstOrDefaultAsync(x=> x.Id == userId);
+    }
+
+    public async Task SaveUser(Domain.User user)
+    {
+        
+        await _dbContext.Users.AddAsync(user);
     }
 }

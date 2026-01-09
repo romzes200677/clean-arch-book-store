@@ -1,0 +1,32 @@
+using BookStore.User.Application.Interfaces;
+using BookStore.User.Infrastructure.data;
+using BookStore.User.Infrastructure.repo;
+using BookStore.User.Infrastructure.seed;
+using BookStore.User.Infrastructure.services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BookStore.User.Infrastructure.Extension;
+
+public static class InfrastructureExtensions // Имя класса обычно во множественном числе
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseSqlite(config["ConnectionStrings:DefaultConnection"]);
+        });
+
+        // Repositories & Services
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IDbInitializer, DbInitializer>();
+        services.AddScoped<INofificationService, NofificationService>();
+
+        // Регистрация UnitOfWork
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+
+        return services;
+    }
+}
