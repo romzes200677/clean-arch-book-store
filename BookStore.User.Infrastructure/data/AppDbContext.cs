@@ -10,7 +10,7 @@ namespace BookStore.User.Infrastructure.data;
 public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>,IUnitOfWork
 {
     public DbSet<Domain.User> Users { get; set; } = null!;
-    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<RefreshTokenEntity> RefreshTokens { get; set; } = null!;
     private IDbContextTransaction? _currentTransaction;
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -37,19 +37,14 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>,
         });
         
         // Конфигурация RefreshToken
-        modelBuilder.Entity<RefreshToken>(entity =>
+        modelBuilder.Entity<RefreshTokenEntity>(entity =>
         {
             entity.ToTable("RefreshTokens");
             entity.HasKey(e => e.Id);
             
             // Индекс для быстрого поиска токена
             entity.HasIndex(e => e.Token).IsUnique();
-
-            // Связь: при удалении пользователя удаляются и его токены
-            entity.HasOne(rt => rt.User)
-                .WithMany() 
-                .HasForeignKey(rt => rt.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+         
         });
     }
 

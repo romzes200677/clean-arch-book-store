@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Features;
 using MediatR;
 
 namespace BookStore.User.Application.Login;

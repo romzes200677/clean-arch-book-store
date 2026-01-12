@@ -1,4 +1,5 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Features;
 using BookStore.User.Domain;
 using MediatR;
 
@@ -8,18 +9,18 @@ namespace BookStore.User.Application.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
 {
-    private readonly IIdentityService _identityService;
+    private readonly IRegisterInterface  _registerInterface;
     private readonly IDomainUserRepository _domainUserRepository;
     private readonly INofificationService _nofificationService;
     private readonly IUnitOfWork _unitOfWork;
     
 
-    public RegisterCommandHandler(IIdentityService identityService, IDomainUserRepository domainUserRepository, INofificationService nofificationService, IUnitOfWork unitOfWork)
+    public RegisterCommandHandler(IDomainUserRepository domainUserRepository, INofificationService nofificationService, IUnitOfWork unitOfWork, IRegisterInterface registerInterface)
     {
-        _identityService = identityService;
         _domainUserRepository = domainUserRepository;
         _nofificationService = nofificationService;
         _unitOfWork = unitOfWork;
+        _registerInterface = registerInterface;
     }
 
     public async  Task Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -27,7 +28,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
     
         try {
-            var userId = await _identityService.RegisterAsync(request.Email, request.Password);
+            var userId = await _registerInterface.RegisterAsync(request.Email, request.Password);
             var businessUser = new Domain.User
             {
                 Id = userId,
@@ -36,7 +37,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
                 Name = request.Email.Split('@')[0] // Пример заполнения имени
             };
             await _domainUserRepository.SaveUser(businessUser);
-            var tokenForEmail = await _identityService.GenerateTokenForEmail(businessUser.Id);
+            var tokenForEmail = await _registerInterface.GenerateTokenForEmail(businessUser.Id);
             await _nofificationService.NotifyAsync(userId, tokenForEmail);
             await _unitOfWork.CommitAsync(cancellationToken);
 

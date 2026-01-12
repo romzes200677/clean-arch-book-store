@@ -1,68 +1,46 @@
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Login;
+using BookStore.User.Application.Interfaces.Features;
 using MediatR;
 
 namespace BookStore.User.Application.Refresh;
 
-// Команда должна принимать логин/пароль и возвращать результат аутентификации
-
 public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,AuthenticationResult?>
 {
-    private readonly IIdentityService _identityService;
+    private readonly IRefreshTokenInterface _refreshTokenInterface;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
-    private readonly ISecurityService _securityService;
+
     private readonly IUnitOfWork _unitOfWork;
 
-    public RefdreshCommandHandler(IIdentityService identityService,  IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository, ISecurityService securityService)
+    public RefdreshCommandHandler(  IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository, ISecurityService securityService, IRefreshTokenInterface refreshTokenInterface)
     {
-        _identityService = identityService;
         _unitOfWork = unitOfWork;
         _refreshTokenRepository = refreshTokenRepository;
-        _securityService = securityService;
+        _refreshTokenInterface = refreshTokenInterface;
     }
 
     public async  Task<AuthenticationResult?> Handle(RefreshCommand request, CancellationToken cancellationToken)
     {
-        //ищем в репозитории рефреш токен
-        //получаем из рефреш токена id iddentity юзера
-        //проверяем что юзер существует
-        //если юзер найден делаем ротацию токенов и генерим новый access и refresh token
-        //иначе ошибка
-        
-        var userId = await _refreshTokenRepository.GetUserByTokenAsync(request.RefreshToken);
-        
-        var isExistUser = await _identityService.CheckUser(userId);
-        if (isExistUser)
+        var token = await _refreshTokenRepository.GetTokenAsync(request.RefreshToken);
+        token.Revoke();
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            await _unitOfWork.BeginTransactionAsync(cancellationToken);
-            try
+            await _refreshTokenRepository.SaveTokenAsync(token);
+            var newRefreshToken =  _refreshTokenInterface.GenerateRefreshToken(token.UserId);
+            var accessToken = await _refreshTokenInterface.GenerateAccessToken(token.UserId);
+            
+            if (accessToken != string.Empty && newRefreshToken != string.Empty)
             {
-                var isRevoked = await _refreshTokenRepository.SetInvalidToken(request.RefreshToken);
-                if (isRevoked)
-                {
-                    var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
-                    var email = await _identityService.GetEmailUser(userId);
-                    if (email != null)
-                    {
-                        var roles = await _identityService.GetRoles(userId);
-                        var claims = _securityService.BuildClaims(userId, email, roles);
-                        var accessToken =_securityService.GenerateJwtToken(claims);
-                        if (accessToken != string.Empty && newRefreshToken != string.Empty)
-                        {
-                            await _unitOfWork.CommitAsync(cancellationToken);
-                            return new AuthenticationResult(accessToken, newRefreshToken, userId);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                throw;
+                await _unitOfWork.CommitAsync(cancellationToken);
+                return new AuthenticationResult(accessToken, newRefreshToken, token.UserId);
             }
         }
-        
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            throw;
+        }
+            
         throw new Exception("can't refresh token");
-   
     }
 }

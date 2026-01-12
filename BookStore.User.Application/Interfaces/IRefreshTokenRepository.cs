@@ -1,8 +1,9 @@
+using BookStore.User.Domain;
+
 namespace BookStore.User.Application.Interfaces;
 
 public interface IRefreshTokenRepository
 {
-    Task<bool> SetInvalidToken(string token);
-    Task<Guid> GetUserByTokenAsync(string token);
-    public string GenerateRefreshTokenAsync(Guid userId);
+    public Task SaveTokenAsync(RefreshToken token);
+    Task<RefreshToken> GetTokenAsync(string token);
 }

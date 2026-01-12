@@ -16,7 +16,7 @@ public class SecurityService: ISecurityService
         _config = config;
     }
 
-    public List<Claim> BuildClaims(Guid userId,string email, IList<string> roles)
+    private List<Claim> BuildClaims(Guid userId,string email, IList<string> roles)
     {
         var claims = new List<Claim>
         {
@@ -45,8 +45,9 @@ public class SecurityService: ISecurityService
     }
     
     
-    public string GenerateJwtToken(List<Claim> claims)
+    public string GenerateJwtToken(Guid userId, string email, IList<string> roles)
     {
+        var claims =   BuildClaims(userId, email, roles);
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Key is not configured")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

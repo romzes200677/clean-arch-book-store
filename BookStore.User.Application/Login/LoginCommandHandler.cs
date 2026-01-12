@@ -1,46 +1,38 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Features;
 using MediatR;
 
 namespace BookStore.User.Application.Login;
 
-// Команда должна принимать логин/пароль и возвращать результат аутентификации
-
 public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthenticationResult>
 {
-    private readonly IIdentityService _identityService;
+    private readonly ILoginInterface _loginInterface;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IRefreshTokenRepository  _refreshTokenRepository;
-    private readonly ISecurityService _securityService;
+    private readonly IRefreshTokenInterface _refreshTokenInterface;
 
-    public LoginCommandHandler(IIdentityService identityService, IDomainUserRepository domainUserRepository, IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository, ISecurityService securityService)
+    public LoginCommandHandler( 
+
+        IUnitOfWork unitOfWork, 
+        ILoginInterface loginInterface, IRefreshTokenInterface refreshTokenInterface)
     {
-        _identityService = identityService;
         _unitOfWork = unitOfWork;
-        _refreshTokenRepository = refreshTokenRepository;
-        _securityService = securityService;
+        _loginInterface = loginInterface;
+        _refreshTokenInterface = refreshTokenInterface;
     }
 
     public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var userId = await _identityService.CheckAuthData(request.Email,request.Password);
-       
+        var authInfo = await _loginInterface.CheckAuthData(request.Email,request.Password);
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-                var newRefreshToken = _refreshTokenRepository.GenerateRefreshTokenAsync(userId);
-                var email = await _identityService.GetEmailUser(userId);
-                if (email != null)
-                {
-                    var roles = await _identityService.GetRoles(userId);
-                    var claims = _securityService.BuildClaims(userId, email, roles);
-                    var accessToken =_securityService.GenerateJwtToken(claims);
-                    if (accessToken != string.Empty && newRefreshToken != string.Empty)
-                    {
-                        await _unitOfWork.CommitAsync(cancellationToken);
-                        return new AuthenticationResult(accessToken, newRefreshToken, userId);
-                    }
-                }
-            
+            var newRefreshToken =  _refreshTokenInterface.GenerateRefreshToken(authInfo.userId);
+            var accessToken = await _refreshTokenInterface.GenerateAccessToken(authInfo.userId);
+            if (accessToken != string.Empty && newRefreshToken != string.Empty)
+            {
+                await _unitOfWork.CommitAsync(cancellationToken);
+                return new AuthenticationResult(accessToken, newRefreshToken, authInfo.userId);
+            }
         }
         catch (Exception ex)
         {
