@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
-using BookStore.User.Application.ConfirmEmail;
-using BookStore.User.Application.Login;
-using BookStore.User.Application.Refresh;
-using BookStore.User.Application.Register;
+using BookStore.User.Application.Commands.ConfirmEmail;
+using BookStore.User.Application.Commands.Login;
+using BookStore.User.Application.Commands.Refresh;
+using BookStore.User.Application.Commands.Register;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

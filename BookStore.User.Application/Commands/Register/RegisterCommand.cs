@@ -1,12 +1,12 @@
-using System.ComponentModel.DataAnnotations;
+using BookStore.User.Application.Interfaces;
 using MediatR;
 
-namespace BookStore.User.Application.Register;
+namespace BookStore.User.Application.Commands.Register;
 
 // Команда должна ссылаться на результат, который мы ожидаем после работы
 public record RegisterCommand(
-    [Required] string Email, 
-    [Required] string Password
-) : IRequest;
+    string Email, 
+    string Password
+) : IRequest,ICommand;
 
 

@@ -1,6 +1,8 @@
 using BookStore.User.Application;
+using BookStore.User.Application.Behaviors;
 using BookStore.User.Infrastructure.Extension;
 using BookStore.User.Infrastructure.services;
+using MediatR;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,10 +17,14 @@ public class UsersModule : IModule
         // 1. MediatR Registration
         // Важно: Сканируем ИМЕННО сборку Application, где лежат Use Cases и Handlers.
         // Assembly.GetExecutingAssembly() здесь даст Infrastructure, а нам нужно Application.
-        var applicationAssembly = typeof(AssemblyMarker).Assembly; 
-    
-        services.AddMediatR(cfg => 
-            cfg.RegisterServicesFromAssemblies(applicationAssembly));
+        var applicationAssembly = typeof(AssemblyMarker).Assembly;
+
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssemblies(applicationAssembly);
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+        });
+          
         
         services.AddInfrastructure(configuration);
         

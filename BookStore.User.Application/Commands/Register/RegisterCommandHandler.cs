@@ -3,7 +3,7 @@ using BookStore.User.Application.Interfaces.Features;
 using BookStore.User.Domain;
 using MediatR;
 
-namespace BookStore.User.Application.Register;
+namespace BookStore.User.Application.Commands.Register;
 
 // Команда должна принимать логин/пароль и возвращать результат аутентификации
 
@@ -25,9 +25,6 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
 
     public async  Task Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-    
-        try {
             var userId = await _registerInterface.RegisterAsync(request.Email, request.Password);
             var businessUser = new Domain.User
             {
@@ -40,11 +37,5 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
             var tokenForEmail = await _registerInterface.GenerateTokenForEmail(businessUser.Id);
             await _nofificationService.NotifyAsync(userId, tokenForEmail);
             await _unitOfWork.CommitAsync(cancellationToken);
-
-        } 
-        catch {
-            await _unitOfWork.RollbackAsync(cancellationToken);
-            throw;
-        }
     }
 }
