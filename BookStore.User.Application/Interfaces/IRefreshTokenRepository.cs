@@ -4,6 +4,7 @@ namespace BookStore.User.Application.Interfaces;
 
 public interface IRefreshTokenRepository
 {
-    public Task SaveTokenAsync(RefreshToken token);
-    Task<RefreshToken> GetTokenAsync(string token);
+    public Task UpdateTokenAsync(RefreshToken token);
+    Task<RefreshToken?> GetTokenAsync(string token);
+    Task AddTokenAsync(RefreshToken token);
 }

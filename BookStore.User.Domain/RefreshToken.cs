@@ -18,10 +18,21 @@ public class RefreshToken
 
     public void Revoke()
     {
-        
+        IsRevoked = true;
     }
-    public void IsExpired()
+    public bool IsExpired()
     {
-        
+        return DateTime.UtcNow > ExpiryDate;
+    }
+
+    public bool IsActive()
+    {
+        return !IsRevoked &&  !IsExpired();
+    }
+
+    public static RefreshToken CreateToken(string token, Guid userId)
+    {
+        var expiry = DateTime.UtcNow.AddDays(7);
+        return new RefreshToken(token, expiry, userId, false);
     }
 }

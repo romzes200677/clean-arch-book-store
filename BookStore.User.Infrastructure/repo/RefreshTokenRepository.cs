@@ -16,14 +16,15 @@ public class RefreshTokenRepository : IRefreshTokenRepository
     }
 
 
-    public async Task SaveTokenAsync(RefreshToken token)
+    public async Task UpdateTokenAsync(RefreshToken token)
     {
         var tokenEntry = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token.Equals(token.Token));
-        tokenEntry.IsRevoked = true;
-        _dbContext.RefreshTokens.Add(tokenEntry);
+        if (tokenEntry == null) throw new ArgumentException("Token not fond");
+        tokenEntry.IsRevoked = token.IsRevoked;
+        _dbContext.RefreshTokens.Update(tokenEntry);
     }
 
-    public  async  Task<RefreshToken> GetTokenAsync(string token)
+    public  async  Task<RefreshToken?> GetTokenAsync(string token)
     {
         var domainToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token.Equals(token));
         if (domainToken != null)
@@ -31,7 +32,19 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             return new RefreshToken(domainToken.Token, domainToken.ExpiryDate, domainToken.UserId, domainToken.IsRevoked);
            
         }
-        throw new Exception("Token not found");
+        return null;
     }
 
+    public async Task AddTokenAsync(RefreshToken token)
+    {
+        var entity = new RefreshTokenEntity()
+        {
+            UserId = token.UserId,
+            Token = token.Token,
+            ExpiryDate = token.ExpiryDate,
+            IsRevoked = token.IsRevoked,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _dbContext.RefreshTokens.AddAsync(entity);
+    }
 }
