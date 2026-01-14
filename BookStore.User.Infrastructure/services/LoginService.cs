@@ -1,6 +1,7 @@
 using BookStore.User.Application.Interfaces.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using SharedKernel.Exceptions;
 
 namespace BookStore.User.Infrastructure.services;
 
@@ -19,11 +20,11 @@ public  class LoginService : ILoginInterface
     {
         var appUser = await _userManager.FindByEmailAsync(email);
         if (appUser == null) 
-            throw new UnauthorizedAccessException("");
+            throw new UnauthorizedException("Неверный email или пароль");
 
         var passwordCheck = await _userManager.CheckPasswordAsync(appUser, password);
-        if (!passwordCheck) 
-            throw new UnauthorizedAccessException("");
+        if (!passwordCheck)
+            throw new UnauthorizedException("Неверный email или пароль");
         var roles = await _userManager.GetRolesAsync(appUser);
         
         return new(

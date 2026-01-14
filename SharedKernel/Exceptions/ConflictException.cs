@@ -2,7 +2,7 @@ namespace SharedKernel.Exceptions;
 
 public class ConflictException: BaseException
 {
-    protected ConflictException(string message) : base(message,"Conflict Exception")
+    public ConflictException(string message) : base(message,"Conflict Exception")
     {
     }
 

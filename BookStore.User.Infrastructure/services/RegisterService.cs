@@ -2,6 +2,7 @@ using System.Text;
 using BookStore.User.Application.Interfaces.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using SharedKernel.Exceptions;
 
 namespace BookStore.User.Infrastructure.services;
 
@@ -23,7 +24,15 @@ public  class RegisterService : IRegisterInterface
         if (!result.Succeeded)
         {
             var error = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new Exception($"Identity Error: {error}");
+        
+            // Проверяем, если ошибка в том, что юзер уже есть
+            if (result.Errors.Any(e => e.Code == "DuplicateUserName" || e.Code == "DuplicateEmail"))
+            {
+                throw new ConflictException($"Пользователь с email {email} уже зарегистрирован");
+            }
+
+            // Для остальных ошибок (пароль слишком простой и т.д.)
+            throw new ValidationException(error);
         }
 
         // 2. Назначаем роль в Identity
