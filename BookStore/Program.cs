@@ -1,4 +1,5 @@
 using System.Text;
+using BookStore.Middleware;
 using BookStore.User.Api;
 using BookStore.User.Infrastructure;
 using BookStore.User.Infrastructure.data;
@@ -151,6 +152,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // --- CONFIGURE ENDPOINTS ---
 foreach (var module in modules)

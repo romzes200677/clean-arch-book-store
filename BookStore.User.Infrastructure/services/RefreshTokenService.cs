@@ -1,20 +1,18 @@
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Features;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace BookStore.User.Infrastructure.services;
 
-public partial class IdentityService : IRefreshTokenInterface
+public class RefreshTokenService : IRefreshTokenInterface
 {
-
+    private readonly UserManager<AppUser> _userManager;
     private readonly ISecurityService  _securityService;
 
-    public IdentityService(ISecurityService securityService, UserManager<AppUser> userManager, ILogger<IdentityService> logger)
+    public RefreshTokenService(ISecurityService securityService, UserManager<AppUser> userManager)
     {
         _securityService = securityService;
         _userManager = userManager;
-        _logger = logger;
     }
 
     public string GenerateRefreshToken(Guid userId)
@@ -29,7 +27,5 @@ public partial class IdentityService : IRefreshTokenInterface
         var roles = await _userManager.GetRolesAsync(user);
         var token =   _securityService.GenerateJwtToken(userId,user.Email, roles);
         return token;
-        
-        
     }
 }

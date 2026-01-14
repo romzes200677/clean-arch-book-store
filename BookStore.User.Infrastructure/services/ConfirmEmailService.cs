@@ -1,29 +1,29 @@
 using System.Text;
-using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using SharedKernel.Exceptions;
 
 namespace BookStore.User.Infrastructure.services;
 
-public partial class IdentityService : IConfirmEmailInterface
+public  class ConfirmEmailService : IConfirmEmailInterface
 {
     private readonly UserManager<AppUser> _userManager;
-    private readonly ILogger<IdentityService> _logger;
+    private readonly ILogger<ConfirmEmailService> _logger;
 
-    public IdentityService(UserManager<AppUser> userManager, ILogger<IdentityService> logger, ISecurityService securityService)
+    public ConfirmEmailService(UserManager<AppUser> userManager, ILogger<ConfirmEmailService> logger)
     {
         _userManager = userManager;
         _logger = logger;
-        _securityService = securityService;
     }
+    
 
     public async Task<ConfirmEmailResult> ConfirmEmailAsync(Guid userId, string tokenValue)
     {
         var user =  await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
-            throw new Exception("User not found");
+            throw new NotFoundException("User not found");
         // 1. Принимаем закодированный токен из URL
         // 2. Декодируем его обратно в нормальный вид
         byte[] decodedTokenBytes = WebEncoders.Base64UrlDecode(tokenValue);

@@ -11,14 +11,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
 {
     private readonly IRegisterInterface  _registerInterface;
     private readonly IDomainUserRepository _domainUserRepository;
-    private readonly INofificationService _nofificationService;
+    private readonly INofificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
     
 
-    public RegisterCommandHandler(IDomainUserRepository domainUserRepository, INofificationService nofificationService, IUnitOfWork unitOfWork, IRegisterInterface registerInterface)
+    public RegisterCommandHandler(
+        IDomainUserRepository domainUserRepository,
+        INofificationService notificationService,
+        IUnitOfWork unitOfWork, 
+        IRegisterInterface registerInterface)
     {
         _domainUserRepository = domainUserRepository;
-        _nofificationService = nofificationService;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
         _registerInterface = registerInterface;
     }
@@ -35,7 +39,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
             };
             await _domainUserRepository.SaveUser(businessUser);
             var tokenForEmail = await _registerInterface.GenerateTokenForEmail(businessUser.Id);
-            await _nofificationService.NotifyAsync(userId, tokenForEmail);
+            await _notificationService.NotifyAsync(userId, tokenForEmail);
             await _unitOfWork.CommitAsync(cancellationToken);
     }
 }

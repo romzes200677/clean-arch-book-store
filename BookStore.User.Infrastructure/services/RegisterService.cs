@@ -1,11 +1,19 @@
 using System.Text;
 using BookStore.User.Application.Interfaces.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace BookStore.User.Infrastructure.services;
 
-public partial class IdentityService : IRegisterInterface
+public  class RegisterService : IRegisterInterface
 {
+    private readonly UserManager<AppUser> _userManager;
+
+    public RegisterService(UserManager<AppUser> userManager)
+    {
+        _userManager = userManager;
+    }
+
     public async Task<Guid> RegisterAsync(string email, string password)
     {
         // 1. Создаем Identity аккаунт
