@@ -2,7 +2,7 @@ namespace SharedKernel.Exceptions;
 
 public class ValidationException : BaseException
 {
-    protected ValidationException(string message) : base(message,"validation_error") {}
+    public ValidationException(string message) : base(message,"validation_error") {}
     
     // Тот самый удобный конструктор
     public ValidationException(string entityName, object key) 

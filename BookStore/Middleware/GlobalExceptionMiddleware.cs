@@ -37,7 +37,8 @@ public class GlobalExceptionMiddleware
         {
             NotFoundException => HttpStatusCode.NotFound,
             ConflictException => HttpStatusCode.Conflict,
-            // Сюда можно добавить ValidationException => BadRequest и т.д.
+            UnauthorizedException => HttpStatusCode.Unauthorized,
+            ValidationException => HttpStatusCode.BadRequest,
             BaseException => HttpStatusCode.BadRequest, // Все наши кастомные по умолчанию 400
             _ => HttpStatusCode.InternalServerError   // Неизвестная ошибка (баг) — 500
         };

@@ -1,6 +1,7 @@
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Features;
 using Microsoft.AspNetCore.Identity;
+using SharedKernel.Exceptions;
 
 namespace BookStore.User.Infrastructure.services;
 
@@ -23,7 +24,7 @@ public class RefreshTokenService : IRefreshTokenInterface
     public async  Task<string> GenerateAccessToken(Guid userId)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if(user is null) throw new InvalidOperationException("User not found");
+        if(user is null) throw new NotFoundException("Пользователь не найден для генерации токена");
         var roles = await _userManager.GetRolesAsync(user);
         var token =   _securityService.GenerateJwtToken(userId,user.Email, roles);
         return token;
