@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
 using BookStore.User.Application.Commands.ConfirmEmail;
+using BookStore.User.Application.Commands.ForgotPassword;
 using BookStore.User.Application.Commands.Login;
 using BookStore.User.Application.Commands.Refresh;
 using BookStore.User.Application.Commands.Register;
+using BookStore.User.Application.Commands.ResetPassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -68,5 +70,19 @@ public class AuthController : ControllerBase
             return Ok("email confirmed successfully");
         }
         return BadRequest($"email could not be confirmed ");
+    }
+    
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand request)
+    {
+        await _mediator.Send(request);
+        return Ok();
+    }
+    
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ResetPasswordCommand request)
+    {
+        var result=  await _mediator.Send(request);
+        return Ok(result);
     }
 }

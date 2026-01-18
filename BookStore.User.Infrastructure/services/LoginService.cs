@@ -8,6 +8,7 @@ namespace BookStore.User.Infrastructure.services;
 public  class LoginService : ILoginInterface
 {
     private readonly UserManager<AppUser> _userManager;
+    private readonly SignInManager<AppUser>  _signInManager;
     private readonly ILogger<LoginService> _logger;
 
     public LoginService(UserManager<AppUser> userManager, ILogger<LoginService> logger)
@@ -25,6 +26,8 @@ public  class LoginService : ILoginInterface
         var passwordCheck = await _userManager.CheckPasswordAsync(appUser, password);
         if (!passwordCheck)
             throw new UnauthorizedException("Неверный email или пароль");
+        if(!await _userManager.IsEmailConfirmedAsync(appUser))
+             throw new UnauthorizedException("Не подтвержден email");
         var roles = await _userManager.GetRolesAsync(appUser);
         
         return new(

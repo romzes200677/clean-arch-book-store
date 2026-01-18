@@ -31,6 +31,9 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<IConfirmEmailInterface, ConfirmEmailService>();
         services.AddScoped<IRegisterInterface, RegisterService>();
         services.AddScoped<ISecurityService, SecurityService>();
+        services.AddScoped<IIdentityRecoveryService, IdentityRecoveryService>();
+        services.AddScoped<IIdentityRecoveryService, IdentityRecoveryService>();
+        services.AddScoped<IForgotPassword, ForgotPasswordService>();
 
         // Регистрация UnitOfWork
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
