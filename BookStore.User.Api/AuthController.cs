@@ -1,4 +1,7 @@
 ﻿using System.Security.Claims;
+using BookStore.User.Api.Dto;
+using BookStore.User.Api.Extension;
+using BookStore.User.Application.Commands.ChangePassword;
 using BookStore.User.Application.Commands.ConfirmEmail;
 using BookStore.User.Application.Commands.ForgotPassword;
 using BookStore.User.Application.Commands.Login;
@@ -8,6 +11,7 @@ using BookStore.User.Application.Commands.ResetPassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.Exceptions;
 
 namespace BookStore.User.Api;
 
@@ -84,5 +88,14 @@ public class AuthController : ControllerBase
     {
         var result=  await _mediator.Send(request);
         return Ok(result);
+    }
+    
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto request)
+    {
+        var userId = User.GetUserId();
+        await _mediator.Send(new ChangePasswordCommand(userId, request.OldPassword, request.NewPassword));
+        return Ok();
     }
 }
