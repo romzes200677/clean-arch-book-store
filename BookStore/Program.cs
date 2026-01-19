@@ -130,8 +130,9 @@ var key = Encoding.UTF8.GetBytes(secretKey);
 builder.Services.AddAuthentication(options =>
     {
         // Указываем, что по умолчанию используем JWT Bearer
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
+        options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+        options.DefaultScheme = IdentityConstants.BearerScheme;
     })
     .AddJwtBearer(options =>
     {
@@ -147,7 +148,8 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
-    });
+    })
+    .AddBearerToken(IdentityConstants.BearerScheme);
 
 builder.Services.AddAuthorization();
 
