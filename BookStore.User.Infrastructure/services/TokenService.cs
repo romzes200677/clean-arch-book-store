@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Interfaces.Features;
+using BookStore.User.Application.Interfaces.Repos;
 using BookStore.User.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;

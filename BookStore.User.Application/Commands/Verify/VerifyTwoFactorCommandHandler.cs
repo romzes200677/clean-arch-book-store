@@ -5,11 +5,11 @@ namespace BookStore.User.Application.Commands.Verify;
 
 public class VerifyTwoFactorCommandHandler: IRequestHandler<VerifyTwoFactorCommand,string>
 {
-    private readonly IIdentityManageService _identityManageService;
+    private readonly IPostAuthService  _postAuthService;
 
-    public VerifyTwoFactorCommandHandler(IIdentityManageService identityManageService)
+    public VerifyTwoFactorCommandHandler(IPostAuthService postAuthService)
     {
-        _identityManageService = identityManageService;
+        _postAuthService = postAuthService;
     }
 
     public async Task<string> Handle(VerifyTwoFactorCommand request, CancellationToken cancellationToken)

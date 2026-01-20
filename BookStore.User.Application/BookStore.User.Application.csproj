@@ -11,4 +11,9 @@
       <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Interfaces\IIdentityManageService.cs" />
+      <Compile Remove="Interfaces\Util.cs" />
+    </ItemGroup>
+
 </Project>

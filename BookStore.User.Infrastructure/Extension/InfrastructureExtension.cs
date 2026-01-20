@@ -1,5 +1,6 @@
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Interfaces.Features;
+using BookStore.User.Application.Interfaces.Repos;
+using BookStore.User.Application.Interfaces.Utils;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.repo;
 using BookStore.User.Infrastructure.seed;
@@ -26,7 +27,6 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<INofificationService, NofificationService>();
         services.AddScoped<IPostAuthService, PostAuthService>();
         services.AddScoped<IPreAuthService, PreAuthService>();
-        services.AddScoped<IIdentityManageService, IdentityManageService>();
 
         // Регистрация UnitOfWork
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());

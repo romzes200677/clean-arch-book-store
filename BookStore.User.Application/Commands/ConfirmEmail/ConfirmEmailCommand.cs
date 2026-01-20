@@ -1,4 +1,4 @@
-using BookStore.User.Application.Interfaces.Features;
+using BookStore.User.Application.Interfaces;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.ConfirmEmail;

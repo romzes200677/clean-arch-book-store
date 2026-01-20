@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Interfaces.Features;
+using BookStore.User.Application.Interfaces.Utils;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.Login;

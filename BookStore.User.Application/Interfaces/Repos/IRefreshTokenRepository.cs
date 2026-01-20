@@ -1,6 +1,6 @@
 using BookStore.User.Domain;
 
-namespace BookStore.User.Application.Interfaces;
+namespace BookStore.User.Application.Interfaces.Repos;
 
 public interface IRefreshTokenRepository
 {

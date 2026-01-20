@@ -1,6 +1,5 @@
 using BookStore.User.Application.Commands.ResetPassword;
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Interfaces.Features;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.ChangePassword;

@@ -1,4 +1,5 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Repos;
 using BookStore.User.Domain;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.models;

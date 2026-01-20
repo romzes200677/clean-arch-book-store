@@ -1,5 +1,5 @@
 using BookStore.User.Application.Interfaces;
-using BookStore.User.Application.Interfaces.Features;
+using BookStore.User.Application.Interfaces.Repos;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.Refresh;

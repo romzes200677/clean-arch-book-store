@@ -1,4 +1,4 @@
-namespace BookStore.User.Application.Interfaces;
+namespace BookStore.User.Application.Interfaces.Utils;
 
 public interface IUnitOfWork
 {

@@ -5,16 +5,17 @@ namespace BookStore.User.Application.Queries;
 
 public class GetRolesQueryHandler: IRequestHandler<GetRolesQuery,UserProfileResponse>
 {
-    private readonly IIdentityManageService _identityManageService;
+    private readonly IPostAuthService  _postAuthService;
 
-    public GetRolesQueryHandler(IIdentityManageService identityManageService)
+    public GetRolesQueryHandler(IPostAuthService postAuthService)
     {
-        _identityManageService = identityManageService;
+        _postAuthService = postAuthService;
     }
+
 
     public async Task<UserProfileResponse> Handle(GetRolesQuery request, CancellationToken cancellationToken)
     {
-        var result = await _identityManageService.GetProfileAsync(request.UserId);
+        var result = await _postAuthService.GetProfileAsync(request.UserId);
         return result;
     }
 }

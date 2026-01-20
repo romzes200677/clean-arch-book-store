@@ -1,4 +1,5 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Utils;
 using MediatR;
 
 namespace BookStore.User.Application.Behaviors;
