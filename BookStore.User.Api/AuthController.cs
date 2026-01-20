@@ -8,6 +8,7 @@ using BookStore.User.Application.Commands.Login;
 using BookStore.User.Application.Commands.Refresh;
 using BookStore.User.Application.Commands.Register;
 using BookStore.User.Application.Commands.ResetPassword;
+using BookStore.User.Application.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -97,5 +98,14 @@ public class AuthController : ControllerBase
         var userId = User.GetUserId();
         await _mediator.Send(new ChangePasswordCommand(userId, request.OldPassword, request.NewPassword));
         return Ok();
+    }
+    
+    [Authorize]
+    [HttpGet("get-profile")]
+    public async Task<IActionResult> GetProfile(GetRolesQuery request)
+    {
+        var userId = User.GetUserId();
+        var roles = await _mediator.Send(userId);
+        return Ok(roles);
     }
 }

@@ -1,4 +1,5 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Queries;
 using Microsoft.AspNetCore.Identity;
 using SharedKernel.Exceptions;
 
@@ -23,5 +24,13 @@ public class IdentityManageService : IIdentityManageService
             var errors = string.Join(",", result.Errors.Select(e => e.Description));
             throw new ValidationException("Validation error", errors);
         }
+    }
+
+    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if(user == null) throw new NotFoundException("User not found");
+        var roles = await _userManager.GetRolesAsync(user);
+        return new UserProfileResponse(user.Id, user.Email, roles.ToList());
     }
 }
