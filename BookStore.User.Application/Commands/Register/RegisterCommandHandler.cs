@@ -9,7 +9,7 @@ namespace BookStore.User.Application.Commands.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
 {
-    private readonly IRegisterInterface  _registerInterface;
+    private readonly IAccountService  _accountService;
     private readonly IDomainUserRepository _domainUserRepository;
     private readonly INofificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
@@ -19,17 +19,17 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
         IDomainUserRepository domainUserRepository,
         INofificationService notificationService,
         IUnitOfWork unitOfWork, 
-        IRegisterInterface registerInterface)
+        IAccountService accountService)
     {
         _domainUserRepository = domainUserRepository;
         _notificationService = notificationService;
         _unitOfWork = unitOfWork;
-        _registerInterface = registerInterface;
+        _accountService = accountService;
     }
 
     public async  Task Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-            var userId = await _registerInterface.RegisterAsync(request.Email, request.Password);
+            var userId = await _accountService.RegisterAsync(request.Email, request.Password);
             var businessUser = new Domain.User
             {
                 Id = userId,
@@ -38,7 +38,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand>
                 Name = request.Email.Split('@')[0] // Пример заполнения имени
             };
             await _domainUserRepository.SaveUser(businessUser);
-            var tokenForEmail = await _registerInterface.GenerateTokenForEmail(businessUser.Id);
+            var tokenForEmail = await _accountService.GenerateTokenForEmail(businessUser.Id);
             await _notificationService.NotifyAsync(userId, tokenForEmail);
             await _unitOfWork.CommitAsync(cancellationToken);
     }

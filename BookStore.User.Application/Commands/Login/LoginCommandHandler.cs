@@ -6,21 +6,16 @@ namespace BookStore.User.Application.Commands.Login;
 
 public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthenticationResult>
 {
-    private readonly ILoginInterface _loginInterface;
-    private readonly ITokenAppService  _tokenAppService;
-    
+    private readonly IAuthService _authSerivce;
 
-
-    public LoginCommandHandler( 
-        ILoginInterface loginInterface, ITokenAppService tokenAppService)
+    public LoginCommandHandler(IAuthService authSerivce)
     {
-        _loginInterface = loginInterface;
-        _tokenAppService = tokenAppService;
+        _authSerivce = authSerivce;
     }
 
     public async Task<AuthenticationResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var authInfo = await _loginInterface.CheckAuthData(request.Email,request.Password);
-        return await _tokenAppService.IssueTokensAsync(authInfo.userId);
+        var authInfo = await _authSerivce.CheckAuthData(request.Email,request.Password);
+        return await _authSerivce.IssueTokensAsync(authInfo.userId);
     }
 }

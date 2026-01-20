@@ -6,13 +6,13 @@ namespace BookStore.User.Application.Commands.Refresh;
 
 public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,AuthenticationResult?>
 {
-    private readonly ITokenAppService  _tokenAppService;
+    private readonly IAuthService  _authService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
 
-    public RefdreshCommandHandler(ITokenAppService tokenAppService, IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository)
+    public RefdreshCommandHandler(IAuthService authService, IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository)
     {
-        _tokenAppService = tokenAppService;
+        _authService = authService;
         _unitOfWork = unitOfWork;
         _refreshTokenRepository = refreshTokenRepository;
     }
@@ -24,6 +24,6 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
         oldToken.Revoke();
       
         await _refreshTokenRepository.UpdateTokenAsync(oldToken);
-        return await _tokenAppService.IssueTokensAsync(oldToken.UserId);
+        return await _authService.IssueTokensAsync(oldToken.UserId);
     }
 }

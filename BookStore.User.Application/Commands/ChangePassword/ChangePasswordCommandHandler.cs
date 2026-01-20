@@ -1,21 +1,22 @@
 using BookStore.User.Application.Commands.ResetPassword;
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.Features;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.ChangePassword;
 
 public class ChangePasswordCommandHandler: IRequestHandler<ResetPasswordCommand,bool>
 {
-    private readonly IIdentityRecoveryService  _identityRecoveryService;
+    private readonly IAccountService  _accountService;
 
-    public ChangePasswordCommandHandler(IIdentityRecoveryService identityRecoveryService)
+    public ChangePasswordCommandHandler(IAccountService accountService)
     {
-        _identityRecoveryService = identityRecoveryService;
+        _accountService = accountService;
     }
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var result = await _identityRecoveryService.ResetPassword(request.UserId, request.Token,request.Password);
+        var result = await _accountService.ResetPassword(request.UserId, request.Token,request.Password);
         return result;
     }
 }

@@ -1,6 +1,5 @@
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Features;
-using BookStore.User.Application.Services;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.repo;
 using BookStore.User.Infrastructure.seed;
@@ -8,6 +7,7 @@ using BookStore.User.Infrastructure.services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AuthService = BookStore.User.Infrastructure.services.AuthService;
 
 namespace BookStore.User.Infrastructure.Extension;
 
@@ -25,15 +25,8 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDbInitializer, DbInitializer>();
         services.AddScoped<INofificationService, NofificationService>();
-        services.AddScoped<ITokenAppService, TokenAppService>();
-        services.AddScoped<IRefreshTokenInterface, RefreshTokenService>();
-        services.AddScoped<ILoginInterface, LoginService>();
-        services.AddScoped<IConfirmEmailInterface, ConfirmEmailService>();
-        services.AddScoped<IRegisterInterface, RegisterService>();
-        services.AddScoped<ISecurityService, SecurityService>();
-        services.AddScoped<IIdentityRecoveryService, IdentityRecoveryService>();
-        services.AddScoped<IIdentityRecoveryService, IdentityRecoveryService>();
-        services.AddScoped<IForgotPassword, ForgotPasswordService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdentityManageService, IdentityManageService>();
 
         // Регистрация UnitOfWork
