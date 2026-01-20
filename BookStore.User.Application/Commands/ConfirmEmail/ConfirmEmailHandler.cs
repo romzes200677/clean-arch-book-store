@@ -5,16 +5,16 @@ namespace BookStore.User.Application.Commands.ConfirmEmail;
 
 public class ConfirmEmailHandler: IRequestHandler<ConfirmEmailCommand,ConfirmEmailResult>
 {
-    private readonly IAccountService  _accountService;
+    private readonly IPostAuthService  _postAuthService;
 
-    public ConfirmEmailHandler(IAccountService accountService)
+    public ConfirmEmailHandler(IPostAuthService postAuthService)
     {
-        _accountService = accountService;
+        _postAuthService = postAuthService;
     }
 
     public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
-        var result = await _accountService.ConfirmEmailAsync(request.UserId, request.Token);
+        var result = await _postAuthService.ConfirmEmailAsync(request.UserId, request.Token);
         return result;
     }
 }

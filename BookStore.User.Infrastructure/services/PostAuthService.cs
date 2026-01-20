@@ -7,12 +7,12 @@ using SharedKernel.Exceptions;
 
 namespace BookStore.User.Infrastructure.services;
 
-public  class AccountService : IAccountService
+public  class PostAuthService : IPostAuthService
 {
     private readonly UserManager<AppUser> _userManager;
-    private readonly ILogger<AccountService> _logger;
+    private readonly ILogger<PostAuthService> _logger;
 
-    public AccountService(UserManager<AppUser> userManager, ILogger<AccountService> logger)
+    public PostAuthService(UserManager<AppUser> userManager, ILogger<PostAuthService> logger)
     {
         _userManager = userManager;
         _logger = logger;
@@ -44,14 +44,7 @@ public  class AccountService : IAccountService
         return user.Id;
     }
     
-    public async Task<string>  GenerateTokenForEmail(Guid userId) 
-    {
-        var appUser = await _userManager.FindByIdAsync(userId.ToString());
-        if (appUser == null) throw new InvalidOperationException("User not found");
-        var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
-        return encodedToken;
-    }
+  
     public async Task<ConfirmEmailResult> ConfirmEmailAsync(Guid userId, string tokenValue)
     {
         var user =  await _userManager.FindByIdAsync(userId.ToString());

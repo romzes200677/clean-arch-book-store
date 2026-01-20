@@ -7,9 +7,9 @@ public record AuthenticationResult(
 
 public record ConfirmEmailResult(bool Success); 
 
-public interface IAccountService
+public interface IPostAuthService
 {
-    public Task<string> GenerateTokenForEmail(Guid userId);
+
     Task<Guid> RegisterAsync(string email, string password);
     Task<ConfirmEmailResult> ConfirmEmailAsync(Guid userId, string tokenValue);
     public Task<(Guid userId, string token)?> PrepareResetAsync(string email);

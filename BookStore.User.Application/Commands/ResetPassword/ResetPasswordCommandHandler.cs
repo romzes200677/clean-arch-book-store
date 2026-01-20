@@ -6,16 +6,16 @@ namespace BookStore.User.Application.Commands.ResetPassword;
 
 public class ResetPasswordCommandHandler: IRequestHandler<ResetPasswordCommand,bool>
 {
-    private readonly IAccountService  _accountService;
+    private readonly IPostAuthService  _postAuthService;
 
-    public ResetPasswordCommandHandler(IAccountService accountService)
+    public ResetPasswordCommandHandler(IPostAuthService postAuthService)
     {
-        _accountService = accountService;
+        _postAuthService = postAuthService;
     }
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var result = await _accountService.ResetPassword(request.UserId, request.Token,request.Password);
+        var result = await _postAuthService.ResetPassword(request.UserId, request.Token,request.Password);
         return result;
     }
 }

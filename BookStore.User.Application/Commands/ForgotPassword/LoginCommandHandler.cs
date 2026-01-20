@@ -6,19 +6,19 @@ namespace BookStore.User.Application.Commands.ForgotPassword;
 
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand>
 {
-    private readonly IAccountService  _accountService;
+    private readonly IPostAuthService  _postAuthService;
     private readonly INofificationService  _nofificationService;
 
-    public ForgotPasswordCommandHandler(INofificationService nofificationService, IAccountService accountService)
+    public ForgotPasswordCommandHandler(INofificationService nofificationService, IPostAuthService postAuthService)
     {
         _nofificationService = nofificationService;
-        _accountService = accountService;
+        _postAuthService = postAuthService;
     }
 
 
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        var resetData = await _accountService.PrepareResetAsync(request.Email);
+        var resetData = await _postAuthService.PrepareResetAsync(request.Email);
         if (resetData != null)
         {
             await _nofificationService.NotifyAsync(resetData.Value.userId, resetData.Value.token);

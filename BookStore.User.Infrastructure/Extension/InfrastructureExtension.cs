@@ -7,7 +7,6 @@ using BookStore.User.Infrastructure.services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AuthService = BookStore.User.Infrastructure.services.AuthService;
 
 namespace BookStore.User.Infrastructure.Extension;
 
@@ -25,8 +24,8 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDbInitializer, DbInitializer>();
         services.AddScoped<INofificationService, NofificationService>();
-        services.AddScoped<IAccountService, AccountService>();
-        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPostAuthService, PostAuthService>();
+        services.AddScoped<IPreAuthService, PreAuthService>();
         services.AddScoped<IIdentityManageService, IdentityManageService>();
 
         // Регистрация UnitOfWork
