@@ -4,7 +4,7 @@ using MediatR;
 
 namespace BookStore.User.Application.Commands.ChangePassword;
 
-public class ChangePasswordCommandHandler: IRequestHandler<ResetPasswordCommand,bool>
+public class ChangePasswordCommandHandler: IRequestHandler<ChangePasswordCommand>
 {
     private readonly IPostAuthService  _postAuthService;
 
@@ -13,9 +13,8 @@ public class ChangePasswordCommandHandler: IRequestHandler<ResetPasswordCommand,
         _postAuthService = postAuthService;
     }
 
-    public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
-        var result = await _postAuthService.ResetPassword(request.UserId, request.Token,request.Password);
-        return result;
+        await _postAuthService.ChangePasswordAsync(request.UserId, request.UserName,request.Password);
     }
 }
