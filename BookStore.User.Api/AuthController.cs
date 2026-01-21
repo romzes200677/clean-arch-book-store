@@ -8,6 +8,7 @@ using BookStore.User.Application.Commands.Login;
 using BookStore.User.Application.Commands.Refresh;
 using BookStore.User.Application.Commands.Register;
 using BookStore.User.Application.Commands.ResetPassword;
+using BookStore.User.Application.Commands.VerifyFA;
 using BookStore.User.Application.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -85,7 +86,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ResetPasswordCommand request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand request)
     {
         var result=  await _mediator.Send(request);
         return Ok(result);
@@ -107,5 +108,12 @@ public class AuthController : ControllerBase
         var userId = User.GetUserId();
         var roles = await _mediator.Send(userId);
         return Ok(roles);
+    }
+    
+    [HttpPost("verify-twofactor-token")]
+    public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCommand request)
+    {
+        var result = await _mediator.Send(request);
+        return Ok(result);
     }
 }

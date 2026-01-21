@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BookStore.User.Api.Dto;
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Repos;
 using BookStore.User.Domain;
@@ -25,7 +26,7 @@ public class TokenService: ITokenService
         _config = config;
     }
 
-    public async Task<AuthenticationResult> IssueTokensAsync(Guid userId)
+    public async Task<SuccessAuthResult> IssueTokensAsync(Guid userId)
     {
         var newRefreshTokenString =  GenerateRefreshToken(userId);
         var newToken = RefreshToken.CreateToken(newRefreshTokenString, userId);
@@ -34,7 +35,7 @@ public class TokenService: ITokenService
         
         if (accessToken != string.Empty && newRefreshTokenString != string.Empty)
         {
-            return new AuthenticationResult(accessToken, newRefreshTokenString, userId);
+            return new SuccessAuthResult(accessToken, newRefreshTokenString, userId);
         }
         throw new UnauthorizedAccessException("Access is denied");
     }
@@ -103,5 +104,13 @@ public class TokenService: ITokenService
         var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
         return encodedToken;
+    }
+
+    public async Task<RequiredTwoFactorResult> GenerateTwoFaToken(Guid userId,string provider)
+    {
+        var appUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (appUser == null) throw new InvalidOperationException("User not found");
+        var twoFaToken = await _userManager.GenerateTwoFactorTokenAsync(appUser, provider);
+        return new(userId, twoFaToken);
     }
 }

@@ -2,10 +2,6 @@ using BookStore.User.Application.Queries;
 
 namespace BookStore.User.Application.Interfaces;
 
-public record AuthenticationResult(
-    string AccessToken, 
-    string RefreshToken, // Добавляем
-    Guid UserId);
 
 public record ConfirmEmailResult(bool Success); 
 
@@ -18,5 +14,4 @@ public interface IPostAuthService
     public Task<bool> ResetPassword(Guid userId, string token, string password);
     Task ChangePasswordAsync(Guid userId,string userName, string password);
     public Task<UserProfileResponse> GetProfileAsync(Guid userId);
-    
 }

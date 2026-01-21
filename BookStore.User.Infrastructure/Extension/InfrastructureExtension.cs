@@ -24,9 +24,11 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<IDomainUserRepository, DomainDomainUserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDbInitializer, DbInitializer>();
+        //<Business
         services.AddScoped<INofificationService, NofificationService>();
         services.AddScoped<IPostAuthService, PostAuthService>();
         services.AddScoped<IPreAuthService, PreAuthService>();
+        services.AddScoped<ITokenService, TokenService>();
 
         // Регистрация UnitOfWork
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());

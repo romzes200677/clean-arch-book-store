@@ -1,10 +1,11 @@
+using BookStore.User.Api.Dto;
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Repos;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.Refresh;
 
-public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,AuthenticationResult?>
+public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,SuccessAuthResult?>
 {
     private readonly ITokenService  _tokenService;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
@@ -15,7 +16,7 @@ public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,Authenticat
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async  Task<AuthenticationResult?> Handle(RefreshCommand request, CancellationToken cancellationToken)
+    public async  Task<SuccessAuthResult?> Handle(RefreshCommand request, CancellationToken cancellationToken)
     {
         var oldToken = await _refreshTokenRepository.GetTokenAsync(request.RefreshToken);
         if(oldToken == null || !oldToken.IsActive() ) throw new Exception("cat not refresh token");

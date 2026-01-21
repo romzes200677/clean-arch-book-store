@@ -1,8 +1,11 @@
+using BookStore.User.Api.Dto;
+
 namespace BookStore.User.Application.Interfaces;
 
 
 public interface ITokenService
 {
-    public Task<AuthenticationResult> IssueTokensAsync(Guid userId);
+    public Task<SuccessAuthResult> IssueTokensAsync(Guid userId);
     public Task<string> GenerateTokenForEmail(Guid userId);
+    public Task<RequiredTwoFactorResult> GenerateTwoFaToken(Guid userId, string provider);
 }

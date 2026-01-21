@@ -12,8 +12,9 @@ public  class PostAuthService : IPostAuthService
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<PostAuthService> _logger;
-
-    public PostAuthService(UserManager<AppUser> userManager, ILogger<PostAuthService> logger)
+    public PostAuthService(
+        UserManager<AppUser> userManager,
+        ILogger<PostAuthService> logger)
     {
         _userManager = userManager;
         _logger = logger;
