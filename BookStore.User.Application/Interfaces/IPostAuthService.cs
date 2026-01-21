@@ -14,4 +14,5 @@ public interface IPostAuthService
     public Task<bool> ResetPassword(Guid userId, string token, string password);
     Task ChangePasswordAsync(Guid userId,string userName, string password);
     public Task<UserProfileResponse> GetProfileAsync(Guid userId);
+    public Task EnableTwoFactor(Guid userId);
 }

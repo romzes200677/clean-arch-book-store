@@ -1,6 +1,7 @@
 using System.Text;
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -12,12 +13,15 @@ public  class PostAuthService : IPostAuthService
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<PostAuthService> _logger;
-    public PostAuthService(
-        UserManager<AppUser> userManager,
-        ILogger<PostAuthService> logger)
+    private readonly INofificationService _notification;
+    private readonly ITokenService _tokenService;
+
+    public PostAuthService(UserManager<AppUser> userManager, ILogger<PostAuthService> logger, INofificationService notification, ITokenService tokenService)
     {
         _userManager = userManager;
         _logger = logger;
+        _notification = notification;
+        _tokenService = tokenService;
     }
 
     public async Task<Guid> RegisterAsync(string email, string password)
@@ -115,5 +119,14 @@ public  class PostAuthService : IPostAuthService
         if(user == null) throw new NotFoundException("User not found");
         var roles = await _userManager.GetRolesAsync(user);
         return new UserProfileResponse(user.Id, user.Email, roles.ToList());
+    }
+
+    public async Task EnableTwoFactor(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if(user == null) throw new NotFoundException("User not found");
+        var tokenProvider = await _tokenService.GetActiveTokenProvider(user.Id);
+        var token = await _userManager.GenerateTwoFactorTokenAsync(user, tokenProvider);
+        await _notification.SendTwoFactorCode(user.Id, token);
     }
 }

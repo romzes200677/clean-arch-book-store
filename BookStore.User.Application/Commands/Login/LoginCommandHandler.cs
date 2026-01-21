@@ -1,4 +1,4 @@
-using BookStore.User.Api.Dto;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
@@ -23,8 +23,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, BaseAuthResult>
         if (authInfo.twoFactorEnabled)
         {
             var result = await _tokenSerivce.GenerateTwoFaToken(authInfo.userId, authInfo.provider);
-            await _nofificationService.NotifyAsync(authInfo.userId, result.TokenFa);
-         
+            await _nofificationService.SendTwoFactorCode(result.UserId, result.Provider);
+            return new RequiredTwoFactorResult(result.UserId, result.Provider);
         }
         return await _tokenSerivce.IssueTokensAsync(authInfo.userId);
     }

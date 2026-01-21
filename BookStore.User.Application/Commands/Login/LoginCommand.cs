@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using BookStore.User.Api.Dto;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces.Utils;
 using MediatR;
 
@@ -9,6 +9,6 @@ namespace BookStore.User.Application.Commands.Login;
 public record LoginCommand(
     [Required] string Email, 
     [Required] string Password
-) : IRequest<SuccessAuthResult>,ICommand;
+) : IRequest<BaseAuthResult>,ICommand;
 
 

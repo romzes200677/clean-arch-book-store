@@ -1,7 +1,7 @@
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
-namespace BookStore.User.Application.Commands.ForgotPassword;
+namespace BookStore.User.Application.Commands.ForgotPassword.Prepare;
 
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand>
 {
@@ -20,7 +20,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         var resetData = await _postAuthService.PrepareResetAsync(request.Email);
         if (resetData != null)
         {
-            await _nofificationService.NotifyAsync(resetData.Value.userId, resetData.Value.token);
+            await _nofificationService.SendResetPassword(resetData.Value.userId, resetData.Value.token);
         }
     }
 }

@@ -2,5 +2,7 @@ namespace BookStore.User.Application.Interfaces;
 
 public interface INofificationService
 {
-    Task NotifyAsync(Guid userId,string token);
+    Task ConfirmEmailAsync(Guid userId,string token);
+    Task SendTwoFactorCode(Guid userId,string token);
+    Task SendResetPassword(Guid userId,string token);
 }

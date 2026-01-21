@@ -1,19 +1,20 @@
-﻿using System.Security.Claims;
-using BookStore.User.Api.Dto;
+﻿using BookStore.User.Api.Dto;
 using BookStore.User.Api.Extension;
 using BookStore.User.Application.Commands.ChangePassword;
 using BookStore.User.Application.Commands.ConfirmEmail;
 using BookStore.User.Application.Commands.ForgotPassword;
 using BookStore.User.Application.Commands.Login;
+using BookStore.User.Application.Commands.RecoverConfirmEmail;
 using BookStore.User.Application.Commands.Refresh;
 using BookStore.User.Application.Commands.Register;
 using BookStore.User.Application.Commands.ResetPassword;
-using BookStore.User.Application.Commands.VerifyFA;
+using BookStore.User.Application.Commands.TwoFa.Enable;
+using BookStore.User.Application.Commands.TwoFa.VerifyFA;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SharedKernel.Exceptions;
 
 namespace BookStore.User.Api;
 
@@ -33,18 +34,15 @@ public class AuthController : ControllerBase
     {
         // Вызываем MediatR
         var result = await _mediator.Send(command);
-        
-        // result это AuthenticationResult { Token, UserId }
-        return Ok(result);
-    }
-    
-    [Authorize] // Токен валиден?
-    [HttpGet("profile")]
-    public IActionResult GetProfile()
-    {
-        // Достаем данные из токена (Claims)
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Ok(new { UserId = userId });
+
+        return result switch
+        {
+            SuccessAuthResult success => Ok(success),
+            RequiredTwoFactorResult mfa => Ok(new { 
+                RequiresTwoFactor = true
+            }),
+            _ => BadRequest()
+        };
     }
     
     [HttpPost("register")]
@@ -103,17 +101,39 @@ public class AuthController : ControllerBase
     
     [Authorize]
     [HttpGet("get-profile")]
-    public async Task<IActionResult> GetProfile(GetRolesQuery request)
+    public async Task<IActionResult> GetProfile()
     {
         var userId = User.GetUserId();
-        var roles = await _mediator.Send(userId);
+        var roles = await _mediator.Send(new GetRolesQuery(userId));
         return Ok(roles);
     }
     
-    [HttpPost("verify-twofactor-token")]
-    public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCommand request)
+    [HttpPost("2fa/verify-twofactor-token")]
+    public async Task<IActionResult> VerifyTwoFactorCode([FromBody] VerifyTwoFactorCommand request)
     {
         var result = await _mediator.Send(request);
-        return Ok(result);
+
+        return result switch
+        {
+            SuccessAuthResult success => Ok(success),
+            RequiredTwoFactorResult mfa => Ok(new { 
+                RequiresTwoFactor = true
+            }),
+            _ => BadRequest()
+        };
+    }
+    
+    [HttpPost("2fa/enable-twofactor")]
+    public async Task<IActionResult> EnableTwoFactor([FromBody] EnableTwoFactor request)
+    {
+        await _mediator.Send(request);
+        return NoContent();
+    }
+    
+    [HttpPost("resend-confirm-email")]
+    public async Task<IActionResult> ResendConfirmEmail([FromBody] ResendConfirmEmail request)
+    {
+        await _mediator.Send(request);
+        return NoContent();
     }
 }

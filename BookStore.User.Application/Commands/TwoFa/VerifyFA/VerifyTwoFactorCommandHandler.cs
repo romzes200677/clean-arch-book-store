@@ -1,8 +1,8 @@
-using BookStore.User.Api.Dto;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
-namespace BookStore.User.Application.Commands.VerifyFA;
+namespace BookStore.User.Application.Commands.TwoFa.VerifyFA;
 
 public class VerifyTwoFactorCommandHandler: IRequestHandler<VerifyTwoFactorCommand,BaseAuthResult>
 {

@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BookStore.User.Api.Dto;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces;
 using BookStore.User.Application.Interfaces.Repos;
 using BookStore.User.Domain;
@@ -112,5 +112,16 @@ public class TokenService: ITokenService
         if (appUser == null) throw new InvalidOperationException("User not found");
         var twoFaToken = await _userManager.GenerateTwoFactorTokenAsync(appUser, provider);
         return new(userId, twoFaToken);
+    }
+    
+    public  async Task<string> GetActiveTokenProvider(Guid userId)
+    {
+        var  user = await _userManager.FindByIdAsync(userId.ToString());
+        var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
+        if (!providers.Any())
+        {
+            throw new UnauthorizedException("Not authorized");
+        }
+        return providers.First();
     }
 }

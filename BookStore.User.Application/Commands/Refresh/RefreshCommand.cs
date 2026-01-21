@@ -1,4 +1,4 @@
-using BookStore.User.Api.Dto;
+using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces.Utils;
 using MediatR;
 
