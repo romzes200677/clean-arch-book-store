@@ -23,8 +23,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, BaseAuthResult>
         if (authInfo.twoFactorEnabled)
         {
             var result = await _tokenSerivce.GenerateTwoFaToken(authInfo.userId, authInfo.provider);
-            await _nofificationService.SendTwoFactorCode(result.email, result.Provider);
-            return new RequiredTwoFactorResult(result.email, result.Provider);
+            await _nofificationService.SendTwoFactorCode(request.Email, result.token);
+            return new RequiredTwoFactorResult(authInfo.userId);
         }
         return await _tokenSerivce.IssueTokensAsync(authInfo.userId);
     }

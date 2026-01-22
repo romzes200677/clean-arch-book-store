@@ -20,7 +20,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         var resetData = await _postAuthService.PrepareResetAsync(request.Email);
         if (resetData != null)
         {
-            await _nofificationService.SendResetPassword(resetData.Value.email, resetData.Value.token,request.NewPassword);
+            await _nofificationService.SendResetPassword(resetData.Value.email, resetData.Value.token);
         }
     }
 }

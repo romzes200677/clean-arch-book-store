@@ -106,12 +106,12 @@ public class TokenService: ITokenService
         return encodedToken;
     }
 
-    public async Task<RequiredTwoFactorResult> GenerateTwoFaToken(Guid userId,string provider)
+    public async Task<(Guid userId,string email, string token)> GenerateTwoFaToken(Guid userId,string provider)
     {
         var appUser = await _userManager.FindByIdAsync(userId.ToString());
         if (appUser == null) throw new InvalidOperationException("User not found");
         var twoFaToken = await _userManager.GenerateTwoFactorTokenAsync(appUser, provider);
-        return new(appUser.Email, twoFaToken);
+        return new(appUser.Id, appUser.Email,twoFaToken);
     }
     
     public  async Task<string> GetActiveTokenProvider(Guid userId)

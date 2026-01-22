@@ -38,9 +38,7 @@ public class AuthController : ControllerBase
         return result switch
         {
             SuccessAuthResult success => Ok(success),
-            RequiredTwoFactorResult mfa => Ok(new { 
-                RequiresTwoFactor = true
-            }),
+            RequiredTwoFactorResult mfa => Ok(mfa),
             _ => BadRequest()
         };
     }

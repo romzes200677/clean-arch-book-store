@@ -18,10 +18,11 @@ public class NofificationService : INofificationService
         return Task.CompletedTask;
     }
 
-    public Task SendResetPassword(string email, string token,string newPassword)
+    public Task SendResetPassword(string email, string token)
     {
-        Console.WriteLine($"{_baseUrl}/api/Auth/recovery/reset-password?email={email}&Token={token}&Password={newPassword}");
-        Console.WriteLine($"Sent to email {email}  code : {token}  ");
+        Console.WriteLine($" Url для фронта : {_baseUrl}/api/Auth/recovery/reset-password?email={email}&Token={token}");
+        Console.WriteLine($"[LOG]: Письмо отправлено на {email}");
+        Console.WriteLine($"[LOG]: Token: {token}");
         return Task.CompletedTask;
     }
 }
