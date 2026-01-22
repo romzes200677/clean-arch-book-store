@@ -2,12 +2,12 @@
 using BookStore.User.Api.Extension;
 using BookStore.User.Application.Commands.ChangePassword;
 using BookStore.User.Application.Commands.ConfirmEmail;
-using BookStore.User.Application.Commands.ForgotPassword;
+using BookStore.User.Application.Commands.ForgotPassword.Prepare;
+using BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
 using BookStore.User.Application.Commands.Login;
 using BookStore.User.Application.Commands.RecoverConfirmEmail;
 using BookStore.User.Application.Commands.Refresh;
 using BookStore.User.Application.Commands.Register;
-using BookStore.User.Application.Commands.ResetPassword;
 using BookStore.User.Application.Commands.TwoFa.Enable;
 using BookStore.User.Application.Commands.TwoFa.VerifyFA;
 using BookStore.User.Application.Dto;
@@ -76,15 +76,15 @@ public class AuthController : ControllerBase
         return BadRequest($"email could not be confirmed ");
     }
     
-    [HttpPost("forgot-password")]
+    [HttpPost("recovery/forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand request)
     {
         await _mediator.Send(request);
         return Ok();
     }
     
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand request)
+    [HttpPost("recovery/reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordCommand request)
     {
         var result=  await _mediator.Send(request);
         return Ok(result);

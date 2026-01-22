@@ -69,7 +69,7 @@ public  class PostAuthService : IPostAuthService
         }
         return new ConfirmEmailResult(true);
     }
-    public async Task<(Guid userId,string token)?> PrepareResetAsync(string email)
+    public async Task<(string email,string token)?> PrepareResetAsync(string email)
     {
         var result = await _userManager.FindByEmailAsync(email);
         if (result is null)
@@ -77,23 +77,23 @@ public  class PostAuthService : IPostAuthService
         var rawToken = await _userManager.GeneratePasswordResetTokenAsync(result);
         var tokenBytes = Encoding.UTF8.GetBytes(rawToken);
         var encodedToken = WebEncoders.Base64UrlEncode(tokenBytes);
-        return (result.Id,encodedToken);
+        return (result.Email,encodedToken);
     }
-    public async Task<bool> ResetPassword(Guid userId, string token, string password)
+    public async Task<bool> ResetPassword(string email, string encodedToken, string password)
     {
-        var user =  await _userManager.FindByIdAsync(userId.ToString());
+        var user =  await _userManager.FindByEmailAsync(email);
         if (user == null) return false;
         string decodedToken;
         try
         {
-            var bytedToken = WebEncoders.Base64UrlDecode(token);
+            var bytedToken = WebEncoders.Base64UrlDecode(encodedToken);
             decodedToken = Encoding.UTF8.GetString(bytedToken);
         }
         catch (Exception)
         {
             throw new ValidationException("Некорректный формат токена");
         }
-        var result = await _userManager.ResetPasswordAsync(user, token, password);
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, password);
         if (!result.Succeeded)
         {
             var errors = string.Join(",",result.Errors.Select(x => x.Description));
@@ -127,6 +127,6 @@ public  class PostAuthService : IPostAuthService
         if(user == null) throw new NotFoundException("User not found");
         var tokenProvider = await _tokenService.GetActiveTokenProvider(user.Id);
         var token = await _userManager.GenerateTwoFactorTokenAsync(user, tokenProvider);
-        await _notification.SendTwoFactorCode(user.Id, token);
+        await _notification.SendTwoFactorCode(user.Email, token);
     }
 }

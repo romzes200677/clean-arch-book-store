@@ -1,3 +1,4 @@
+using BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
@@ -14,7 +15,7 @@ public class ResetPasswordCommandHandler: IRequestHandler<ResetPasswordCommand,b
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var result = await _postAuthService.ResetPassword(request.UserId, request.Token,request.Password);
+        var result = await _postAuthService.ResetPassword(request.email, request.Token,request.Password);
         return result;
     }
 }

@@ -111,7 +111,7 @@ public class TokenService: ITokenService
         var appUser = await _userManager.FindByIdAsync(userId.ToString());
         if (appUser == null) throw new InvalidOperationException("User not found");
         var twoFaToken = await _userManager.GenerateTwoFactorTokenAsync(appUser, provider);
-        return new(userId, twoFaToken);
+        return new(appUser.Email, twoFaToken);
     }
     
     public  async Task<string> GetActiveTokenProvider(Guid userId)

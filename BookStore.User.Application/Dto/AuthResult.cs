@@ -8,6 +8,6 @@ public record SuccessAuthResult(
     Guid UserId):BaseAuthResult;
     
 public record RequiredTwoFactorResult(
-    Guid UserId,
+    string email,
     string Provider 
     ):BaseAuthResult;

@@ -1,9 +1,9 @@
 using MediatR;
 
-namespace BookStore.User.Application.Commands.ResetPassword;
+namespace BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
 
 public record ResetPasswordCommand(
-Guid UserId ,
-string Token,
-string Password
+    string email ,
+    string Token,
+    string Password
     ):IRequest<bool>;

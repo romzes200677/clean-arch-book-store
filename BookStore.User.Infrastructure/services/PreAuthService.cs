@@ -62,6 +62,6 @@ public class PreAuthService: IPreAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if(user == null) throw new NotFoundException("User not found");
         var tokenForEmail = await _tokenService.GenerateTokenForEmail(user.Id);
-        await _nofificationService.ConfirmEmailAsync(user.Id, tokenForEmail);
+        await _nofificationService.ConfirmEmailAsync(email, tokenForEmail);
     }
 }
