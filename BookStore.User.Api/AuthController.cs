@@ -1,15 +1,5 @@
 ﻿using BookStore.User.Api.Dto;
 using BookStore.User.Api.Extension;
-using BookStore.User.Application.Commands.ChangePassword;
-using BookStore.User.Application.Commands.ConfirmEmail;
-using BookStore.User.Application.Commands.ForgotPassword.Prepare;
-using BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
-using BookStore.User.Application.Commands.Login;
-using BookStore.User.Application.Commands.RecoverConfirmEmail;
-using BookStore.User.Application.Commands.Refresh;
-using BookStore.User.Application.Commands.Register;
-using BookStore.User.Application.Commands.TwoFa.Enable;
-using BookStore.User.Application.Commands.TwoFa.VerifyFA;
 using BookStore.User.Application.Dto;
 using BookStore.User.Application.Queries;
 using MediatR;
@@ -30,32 +20,36 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginCommand command)
+    public async Task<IActionResult> Login([FromBody] LoginDto command,
+        CancellationToken cancellationToken = default)
     {
         // Вызываем MediatR
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command.ToCommand());
 
         return result switch
         {
-            SuccessAuthResult success => Ok(success),
-            RequiredTwoFactorResult mfa => Ok(mfa),
+            SuccessAuthResult s => Ok(new AuthResponseDto(false, s.AccessToken, s.RefreshToken)),
+            FailedAuthResult f => BadRequest(f.ErrorMessage),
             _ => BadRequest()
         };
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterCommand request)
+    public async Task<IActionResult> Register([FromBody] RegisterDto request,
+        CancellationToken cancellationToken = default)
     {
         // Если используете MediatR:
-        await _mediator.Send(new RegisterCommand(request.Email, request.Password));
+        await _mediator.Send(request.ToCommand(),cancellationToken);
          
         return Ok("User registered successfully");
     }
     
+    [Authorize]
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshCommand request)
+    public async Task<IActionResult> Refresh([FromBody] RefreshDto request,
+        CancellationToken cancellationToken = default)
     {
-        var result =await _mediator.Send(request);
+        var result =await _mediator.Send(request.ToCommand(),cancellationToken);
     
         if (result == null)
             return Unauthorized("Невалидный токен обновления");
@@ -63,75 +57,35 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(Guid userId,string token)
-    {
-        var result = await _mediator.Send(new ConfirmEmailCommand(userId,token));
-        if (result.Success)
-        {
-            return Ok("email confirmed successfully");
-        }
-        return BadRequest($"email could not be confirmed ");
-    }
-    
-    [HttpPost("recovery/forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand request)
-    {
-        await _mediator.Send(request);
-        return Ok();
-    }
-    
-    [HttpPost("recovery/reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordCommand request)
-    {
-        var result=  await _mediator.Send(request);
-        return Ok(result);
-    }
-    
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePasswordDto request)
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto request,
+        CancellationToken cancellationToken = default)
     {
         var userId = User.GetUserId();
-        await _mediator.Send(new ChangePasswordCommand(userId, request.OldPassword, request.NewPassword));
+        await _mediator.Send(request.ToCommand(userId),cancellationToken);
         return Ok();
     }
     
     [Authorize]
     [HttpGet("get-profile")]
-    public async Task<IActionResult> GetProfile()
+    public async Task<IActionResult> GetProfile(
+    CancellationToken cancellationToken = default)
     {
         var userId = User.GetUserId();
-        var roles = await _mediator.Send(new GetRolesQuery(userId));
+        var roles = await _mediator.Send(new GetRolesQuery(userId),cancellationToken);
         return Ok(roles);
     }
     
-    [HttpPost("2fa/verify-twofactor-token")]
-    public async Task<IActionResult> VerifyTwoFactorCode([FromBody] VerifyTwoFactorCommand request)
-    {
-        var result = await _mediator.Send(request);
-
-        return result switch
-        {
-            SuccessAuthResult success => Ok(success),
-            RequiredTwoFactorResult mfa => Ok(new { 
-                RequiresTwoFactor = true
-            }),
-            _ => BadRequest()
-        };
-    }
     
+    [Authorize]
     [HttpPost("2fa/enable-twofactor")]
-    public async Task<IActionResult> EnableTwoFactor([FromBody] EnableTwoFactor request)
+    public async Task<IActionResult> EnableTwoFactor([FromBody] EnableTwoFactorDto request,
+        CancellationToken cancellationToken = default)
     {
-        await _mediator.Send(request);
+        await _mediator.Send(request.ToCommand(),cancellationToken);
         return NoContent();
     }
     
-    [HttpPost("resend-confirm-email")]
-    public async Task<IActionResult> ResendConfirmEmail([FromBody] ResendConfirmEmail request)
-    {
-        await _mediator.Send(request);
-        return NoContent();
-    }
+    
 }

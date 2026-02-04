@@ -1,8 +1,7 @@
-using BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
-namespace BookStore.User.Application.Commands.ResetPassword;
+namespace BookStore.User.Application.Commands.ForgotPassword.ResetPassword;
 
 public class ResetPasswordCommandHandler: IRequestHandler<ResetPasswordCommand,bool>
 {

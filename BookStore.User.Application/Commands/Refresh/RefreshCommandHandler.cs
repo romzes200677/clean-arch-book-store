@@ -5,12 +5,12 @@ using MediatR;
 
 namespace BookStore.User.Application.Commands.Refresh;
 
-public class RefdreshCommandHandler : IRequestHandler<RefreshCommand,SuccessAuthResult?>
+public class RefreshCommandHandler : IRequestHandler<RefreshCommand,SuccessAuthResult?>
 {
     private readonly ITokenService  _tokenService;
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
 
-    public RefdreshCommandHandler(ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
+    public RefreshCommandHandler(ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
     {
         _tokenService = tokenService;
         _refreshTokenRepository = refreshTokenRepository;

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace BookStore.User.Application.Commands.TwoFa.Enable;
 
-public class EnableTwoFactorCommandHandler: IRequestHandler<EnableTwoFactor>
+public class EnableTwoFactorCommandHandler: IRequestHandler<EnableTwoFactorCommand>
 {
     private readonly IPostAuthService  _postAuthService;
 
@@ -12,7 +12,7 @@ public class EnableTwoFactorCommandHandler: IRequestHandler<EnableTwoFactor>
         _postAuthService = postAuthService;
     }
 
-    public async Task Handle(EnableTwoFactor request, CancellationToken cancellationToken)
+    public async Task Handle(EnableTwoFactorCommand request, CancellationToken cancellationToken)
     {
         await _postAuthService.EnableTwoFactor(request.UserId);
     }

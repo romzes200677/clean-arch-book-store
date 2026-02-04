@@ -1,0 +1,40 @@
+graph TD
+    subgraph "Группы Предметов"
+        K[Ключи / Passwords]
+        B[Билеты / Tokens & Codes]
+        P[Пропуска / Auth Tokens]
+        O[Ok / 200]
+        BK[Билеты+Ключ]
+        PK[Пропус+Ключ]
+        U[Данные Пользователя]
+    end
+
+    subgraph "Серии (Use Cases)"
+        Login -- Req --> K 
+        Login -- Send --> P 
+        Register -- Req --> K 
+        Register -- Send --> O 
+        Refresh -- Req -->  B
+        Refresh -- Send -->  P
+        ConfirmEmail -- Req -->  B
+        ConfirmEmail -- Send -->  O
+        ForgotPassword -- Req -->  K
+        ForgotPassword -- Send -->  O
+        ResetPassword -- Req -->  BK
+        ResetPassword -- Send  -->  O
+        ChangePassword -- Req -->  K
+        ChangePassword -- Send -->  O
+        GetProfile -- Req -->  P
+        GetProfile -- Send -->  U
+        VerifyTwoFactorCode -- Req -->  B
+        VerifyTwoFactorCode -- Send -->  P
+        EnableTwoFactor -- Req -->  K
+        EnableTwoFactor -- Send -->  O
+        ResendConfirmEmail -- Req -->  B
+        ResendConfirmEmail -- Send -->  O
+     
+    end
+
+    linkStyle 3,7,9,11,13,19,21 stroke-width:2px,fill:none,stroke:pink;
+    linkStyle 0,2,8,10,12,18 stroke-width:2px,fill:none,stroke:blue;
+    linkStyle 4,6,10,16,20 stroke-width:2px,fill:none,stroke:green;

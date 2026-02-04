@@ -4,6 +4,6 @@ namespace BookStore.User.Application.Commands.ChangePassword;
 
 public record ChangePasswordCommand(
 Guid UserId ,
-string UserName,
-string Password
+string OldPassword,
+string NewPassword
     ):IRequest;

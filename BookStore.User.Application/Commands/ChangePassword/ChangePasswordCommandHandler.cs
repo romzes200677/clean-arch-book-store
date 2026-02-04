@@ -1,4 +1,3 @@
-using BookStore.User.Application.Commands.ResetPassword;
 using BookStore.User.Application.Interfaces;
 using MediatR;
 
@@ -15,6 +14,6 @@ public class ChangePasswordCommandHandler: IRequestHandler<ChangePasswordCommand
 
     public async Task Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
-        await _postAuthService.ChangePasswordAsync(request.UserId, request.UserName,request.Password);
+        await _postAuthService.ChangePasswordAsync(request.UserId, request.OldPassword,request.NewPassword);
     }
 }

@@ -6,11 +6,11 @@ namespace BookStore.User.Application.Commands.ForgotPassword.Prepare;
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand>
 {
     private readonly IPostAuthService  _postAuthService;
-    private readonly INofificationService  _nofificationService;
+    private readonly INotificationService  _notificationService;
 
-    public ForgotPasswordCommandHandler(INofificationService nofificationService, IPostAuthService postAuthService)
+    public ForgotPasswordCommandHandler(INotificationService notificationService, IPostAuthService postAuthService)
     {
-        _nofificationService = nofificationService;
+        _notificationService = notificationService;
         _postAuthService = postAuthService;
     }
 
@@ -20,7 +20,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         var resetData = await _postAuthService.PrepareResetAsync(request.Email);
         if (resetData != null)
         {
-            await _nofificationService.SendResetPassword(resetData.Value.email, resetData.Value.token);
+            await _notificationService.SendResetPassword(resetData.Value.email, resetData.Value.token);
         }
     }
 }

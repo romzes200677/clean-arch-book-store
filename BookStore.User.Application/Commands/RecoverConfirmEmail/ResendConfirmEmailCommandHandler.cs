@@ -5,7 +5,7 @@ namespace BookStore.User.Application.Commands.RecoverConfirmEmail;
 
 // Команда должна принимать логин/пароль и возвращать результат аутентификации
 
-public class ResendConfirmEmailCommandHandler : IRequestHandler<ResendConfirmEmail>
+public class ResendConfirmEmailCommandHandler : IRequestHandler<ResendConfirmEmailCommand>
 {
     private readonly IPreAuthService _preAuthService;
 
@@ -15,7 +15,7 @@ public class ResendConfirmEmailCommandHandler : IRequestHandler<ResendConfirmEma
     }
 
 
-    public async  Task Handle(ResendConfirmEmail request, CancellationToken cancellationToken)
+    public async  Task Handle(ResendConfirmEmailCommand request, CancellationToken cancellationToken)
     {
         await _preAuthService.SendConfirmEmail(request.email);
     }

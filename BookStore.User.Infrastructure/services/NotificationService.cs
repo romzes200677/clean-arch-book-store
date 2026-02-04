@@ -2,7 +2,7 @@ using BookStore.User.Application.Interfaces;
 
 namespace BookStore.User.Infrastructure.services;
 
-public class NofificationService : INofificationService
+public class NotificationService : INotificationService
 {
     private readonly string _baseUrl = "https://localhost:7116";
     
@@ -21,6 +21,15 @@ public class NofificationService : INofificationService
     public Task SendResetPassword(string email, string token)
     {
         Console.WriteLine($" Url для фронта : {_baseUrl}/api/Auth/recovery/reset-password?email={email}&Token={token}");
+        Console.WriteLine($"[LOG]: Письмо отправлено на {email}");
+        Console.WriteLine($"[LOG]: Token: {token}");
+        return Task.CompletedTask;
+    }
+    
+    public Task SendConfirmEmail(string email,string token)
+    {
+
+        Console.WriteLine($" Url для фронта : {_baseUrl}/api/Auth/recovery/confirm-email?email={email}&Token={token}");
         Console.WriteLine($"[LOG]: Письмо отправлено на {email}");
         Console.WriteLine($"[LOG]: Token: {token}");
         return Task.CompletedTask;

@@ -1,31 +1,42 @@
 using BookStore.User.Application.Dto;
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.@new;
 using MediatR;
 
 namespace BookStore.User.Application.Commands.Login;
 
 public class LoginCommandHandler : IRequestHandler<LoginCommand, BaseAuthResult>
 {
-    private readonly IPreAuthService _preAuthSerivce;
+    private readonly IIdentityService _identityService;
     private readonly ITokenService  _tokenSerivce;
-    private readonly INofificationService _nofificationService;
+    private readonly INotificationService _notificationService;
 
-    public LoginCommandHandler(IPreAuthService preAuthSerivce, ITokenService tokenSerivce, INofificationService nofificationService)
+    public LoginCommandHandler(IIdentityService identityService, ITokenService tokenSerivce, INotificationService notificationService)
     {
-        _preAuthSerivce = preAuthSerivce;
+        _identityService = identityService;
         _tokenSerivce = tokenSerivce;
-        _nofificationService = nofificationService;
+        _notificationService = notificationService;
     }
+
 
     public async Task<BaseAuthResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var authInfo = await _preAuthSerivce.CheckAuthData(request.Email,request.Password);
-        if (authInfo.twoFactorEnabled)
+        var result = await _identityService.CheckAuthData(request.Email,request.Password);
+        return result switch
         {
-            var result = await _tokenSerivce.GenerateTwoFaToken(authInfo.userId, authInfo.provider);
-            await _nofificationService.SendTwoFactorCode(request.Email, result.token);
-            return new RequiredTwoFactorResult(authInfo.userId);
-        }
-        return await _tokenSerivce.IssueTokensAsync(authInfo.userId);
+            AuthCheckSuccess info when info.EnabledTwoFactor =>
+                await HandleTwoFactorAuth(info, request.Email),
+            AuthCheckSuccess info =>
+                await _tokenSerivce.IssueTokensAsync(info.UserId),
+            _ => result
+        };
+    }
+
+    private async Task<BaseAuthResult> HandleTwoFactorAuth(AuthCheckSuccess info, string email)
+    {
+        var provider = await _identityService.GetProvider(info.UserId);
+        var tokenData = await _identityService.GenerateTwoFaToken(info.UserId, provider);
+        await _notificationService.SendTwoFactorCode(email, tokenData.token);
+        return new RequiredTwoFactorResult(info.UserId);
     }
 }

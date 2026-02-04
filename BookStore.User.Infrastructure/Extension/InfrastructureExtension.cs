@@ -1,10 +1,12 @@
 using BookStore.User.Application.Interfaces;
+using BookStore.User.Application.Interfaces.@new;
 using BookStore.User.Application.Interfaces.Repos;
 using BookStore.User.Application.Interfaces.Utils;
 using BookStore.User.Infrastructure.data;
 using BookStore.User.Infrastructure.repo;
 using BookStore.User.Infrastructure.seed;
 using BookStore.User.Infrastructure.services;
+using BookStore.User.Infrastructure.services.New;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,9 +27,10 @@ public static class InfrastructureExtensions // Имя класса обычно
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDbInitializer, DbInitializer>();
         //<Business
-        services.AddScoped<INofificationService, NofificationService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPostAuthService, PostAuthService>();
-        services.AddScoped<IPreAuthService, PreAuthService>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService, TokenService>();
 
         // Регистрация UnitOfWork

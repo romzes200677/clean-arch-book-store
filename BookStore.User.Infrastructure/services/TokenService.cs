@@ -26,7 +26,7 @@ public class TokenService: ITokenService
         _config = config;
     }
 
-    public async Task<SuccessAuthResult> IssueTokensAsync(Guid userId)
+    public async Task<BaseAuthResult> IssueTokensAsync(Guid userId)
     {
         var newRefreshTokenString =  GenerateRefreshToken(userId);
         var newToken = RefreshToken.CreateToken(newRefreshTokenString, userId);
@@ -37,7 +37,7 @@ public class TokenService: ITokenService
         {
             return new SuccessAuthResult(accessToken, newRefreshTokenString, userId);
         }
-        throw new UnauthorizedAccessException("Access is denied");
+        return new FailedAuthResult("Access is denied");
     }
     public string GenerateRefreshToken(Guid userId)
     {
@@ -97,31 +97,9 @@ public class TokenService: ITokenService
         return claims;
     }
     
-    public async Task<string>  GenerateTokenForEmail(Guid userId) 
-    {
-        var appUser = await _userManager.FindByIdAsync(userId.ToString());
-        if (appUser == null) throw new InvalidOperationException("User not found");
-        var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
-        return encodedToken;
-    }
+  
 
-    public async Task<(Guid userId,string email, string token)> GenerateTwoFaToken(Guid userId,string provider)
-    {
-        var appUser = await _userManager.FindByIdAsync(userId.ToString());
-        if (appUser == null) throw new InvalidOperationException("User not found");
-        var twoFaToken = await _userManager.GenerateTwoFactorTokenAsync(appUser, provider);
-        return new(appUser.Id, appUser.Email,twoFaToken);
-    }
+
     
-    public  async Task<string> GetActiveTokenProvider(Guid userId)
-    {
-        var  user = await _userManager.FindByIdAsync(userId.ToString());
-        var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
-        if (!providers.Any())
-        {
-            throw new UnauthorizedException("Not authorized");
-        }
-        return providers.First();
-    }
+
 }
